@@ -1,0 +1,69 @@
+# Proposed tenant policy document for a host-configured authentication package.
+# Methods, provider credentials, sessions, and storage are supplied through Go.
+# YAML loading and the public constructor API are not implemented yet.
+# all / any follow docs/agents/init.md.
+
+tenants:
+  acme:
+    # Intent names select independent policy trees.
+    policies:
+      sign_in:
+        all:
+          - id: primary
+            any:
+              - method: password
+              - method: email_code
+              - method: oauth
+                providers: [google, github]
+          - id: mfa
+            any:
+              - method: totp
+              - method: telegram_code
+
+      # Proof required by the registration use case, not account creation logic.
+      sign_up:
+        id: identity
+        any:
+          - method: email_code
+          - method: oauth
+            providers: [google, github]
+
+      # Assumes the application has securely bound the transaction to a user.
+      update:
+        id: additional_verification
+        any:
+          - method: totp
+          - method: telegram_code
+
+      # Verifies the candidate identity; linking it is application behavior.
+      link_identity:
+        id: candidate_identity
+        any:
+          - method: oauth
+            providers: [google, github]
+
+      # An application-specific intent using the same requirement grammar.
+      withdraw_money:
+        all:
+          - id: account_proof
+            any:
+              - method: password
+          - id: confirmation
+            any:
+              - method: totp
+
+  partner:
+    policies:
+      sign_in:
+        all:
+          - id: primary
+            any:
+              - method: oauth
+                providers: [google]
+          - id: mfa
+            any:
+              - method: totp
+      update:
+        id: additional_verification
+        any:
+          - method: totp

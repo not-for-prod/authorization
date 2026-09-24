@@ -1,0 +1,24 @@
+# Example policy body for tenant "acme", intent "authenticate".
+# The tenant and intent select this policy outside the requirement tree.
+# Illustrative design syntax; runtime config loading is not yet defined.
+
+# Every child requirement must be satisfied. List order is not execution order.
+all:
+  # Choose one primary authentication method.
+  # "primary" is a configurable requirement ID, not an engine keyword.
+  - id: primary
+    any:
+      - method: password
+      - method: email_code
+      - method: oauth
+        # Either provider is allowed for this OAuth requirement.
+        providers:
+          - google
+          - github
+
+  # Also satisfy this requirement with one of the available methods.
+  # "mfa" is a configurable requirement ID, not an engine keyword.
+  - id: mfa
+    any:
+      - method: totp
+      - method: telegram_code

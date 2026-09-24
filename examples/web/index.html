@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Auth lab</title><link rel="stylesheet" href="/style.css"><script src="/app.js" defer></script></head>
+<body><main>
+<header><div><span class="eyebrow">LOCAL DEVELOPMENT</span><h1>Auth lab<span class="dot">.</span></h1><p>A small workspace for testing the authentication flow.</p></div><a href="/docs/" target="_blank" rel="noopener">API docs ↗</a></header>
+<div class="notice">Login: alice · Password: test-password · Bcrypt verification · In-memory demo. Sign-up, update and delete are not configured.</div>
+<div class="layout"><section class="panel">
+<div class="section-head"><span class="number">01</span><h2>Create a transaction</h2></div>
+<label for="intent">Intent</label><select id="intent"><option>Loading policies…</option></select>
+<button id="create" disabled>Create transaction</button>
+<details><summary>Configured policies</summary><pre id="policy">Loading…</pre></details>
+<hr><div class="section-head"><span class="number">02</span><h2>Collect evidence</h2></div>
+<p id="instruction">Create a transaction to see available methods.</p>
+<label for="method">Method</label><select id="method" disabled></select>
+<div id="email-field"><label for="email">Test email</label><input id="email" type="email" value="tester@example.com" autocomplete="off"><small>Sign up first, then sign in with the same email.</small></div>
+<button id="start" disabled>Start method</button>
+<div id="proof-fields" hidden>
+<div id="password-fields"><label for="username">Login</label><input id="username" value="alice" autocomplete="off"><label for="password">Password</label><input id="password" type="password" value="test-password" autocomplete="off"></div>
+<div id="code-field"><label for="code">Verification code</label><input id="code" value="123456" inputmode="numeric" autocomplete="off"></div>
+<small id="hint"></small><div class="actions"><button id="verify" disabled>Verify proof</button><button id="callback" class="secondary" disabled hidden>Test callback</button></div></div>
+<p id="message" role="status" aria-live="polite"></p>
+</section>
+<section class="panel"><div class="section-head"><span class="number">03</span><h2>Inspect the result</h2><span id="status" class="badge">No transaction</span></div>
+<div class="metrics"><div><label>Transaction</label><code id="tx-id">—</code></div><div><label>Attempt</label><code id="attempt-id">—</code></div><div><label>Challenge</label><code id="challenge-id">—</code></div></div>
+<div class="actions"><button id="refresh" class="secondary" disabled>Refresh progress</button><button id="clear" class="quiet">Clear history</button></div>
+<div id="success" hidden><h3>Authentication complete</h3><p id="principal"></p><details><summary>Session result (contains token)</summary><pre id="result"></pre></details></div>
+<h3>Latest response</h3><pre id="response">Your API response will appear here.</pre>
+<h3>Request history <small>Current page only</small></h3><ol id="history"><li class="muted">No requests yet.</li></ol>
+</section></div><footer>Tenant: main <span>Plain HTTP requests · Same-origin caller cookie · No build step</span></footer>
+</main></body></html>

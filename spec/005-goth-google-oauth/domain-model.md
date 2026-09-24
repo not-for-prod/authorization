@@ -1,0 +1,2 @@
+# Aggregate boundaries
+The approved visual model defines unchanged Transaction, User, Identity and Session roots. Transaction is keyed and locked by tenant/transaction identity and owns bounded attempts, private challenges, claims, evidence and receipts. Driver configuration and Google sessions have no independent repository. User/Identity writes remain in the previously approved sign-up boundary; sessions remain host-managed. No new cross-aggregate event routes.

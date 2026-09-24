@@ -1,0 +1,222 @@
+syntax = "proto3";
+
+package authorization.v1;
+
+import "authorization/v1/intent.proto";
+import "buf/validate/validate.proto";
+import "google/api/annotations.proto";
+import "google/protobuf/struct.proto";
+import "google/protobuf/timestamp.proto";
+
+option go_package = "authorization/generated/pb/authorization/v1;authorizationv1";
+
+// AuthenticationService exposes authentication commands and progress queries.
+// The host must authorize access to each transaction independently of its ID.
+service AuthenticationService {
+  // GetAuthPolicy lists caller-visible intents and configured authentication choices.
+  // This is a static description, not a guarantee of current method availability.
+  rpc GetAuthPolicy(GetAuthPolicyRequest) returns (GetAuthPolicyResponse) {
+    option (google.api.http) = {get: "/v1/tenants/{tenant_id}/auth/policy"};
+  }
+
+  // CreateTransaction starts a tenant-bound authentication transaction for a configured intent.
+  rpc CreateTransaction(CreateTransactionRequest) returns (CreateTransactionResponse) {
+    option (google.api.http) = {
+      post: "/v1/tenants/{tenant_id}/auth/transactions"
+      body: "*"
+    };
+  }
+  // GetTransaction reads progress without returning a session credential.
+  rpc GetTransaction(GetTransactionRequest) returns (GetTransactionResponse) {
+    option (google.api.http) = {get: "/v1/tenants/{tenant_id}/auth/transactions/{transaction_id}"};
+  }
+  // StartMethod begins a selected method, optionally creating a challenge.
+  rpc StartMethod(StartMethodRequest) returns (StartMethodResponse) {
+    option (google.api.http) = {
+      post: "/v1/tenants/{tenant_id}/auth/transactions/{transaction_id}:startMethod"
+      body: "*"
+    };
+  }
+  // VerifyMethod verifies a direct proof or completes a pending challenge.
+  rpc VerifyMethod(VerifyMethodRequest) returns (VerifyMethodResponse) {
+    option (google.api.http) = {
+      post: "/v1/tenants/{tenant_id}/auth/transactions/{transaction_id}:verifyMethod"
+      body: "*"
+    };
+  }
+  // CompleteCallback dispatches host-parsed callback input to the stored method.
+  // This is not a provider's raw redirect URI; proof and correlation are verified
+  // by the callback-capable driver before any evidence is accepted.
+  rpc CompleteCallback(CompleteCallbackRequest) returns (CompleteCallbackResponse) {
+    option (google.api.http) = {
+      post: "/v1/tenants/{tenant_id}/auth/transactions/{transaction_id}/challenges/{challenge_id}:completeCallback"
+      body: "*"
+    };
+  }
+}
+
+message CreateTransactionRequest {
+  string tenant_id = 1 [(buf.validate.field).string.min_len = 1];
+  reserved 2; // Former string intent.
+  Intent intent = 3 [(buf.validate.field).enum = {defined_only: true, not_in: [0]}];
+  // An existing user is derived from trusted authentication context, never input.
+}
+
+message CreateTransactionResponse {
+  Transaction transaction = 1;
+}
+
+message GetTransactionRequest {
+  string tenant_id = 1 [(buf.validate.field).string.min_len = 1];
+  string transaction_id = 2 [(buf.validate.field).string.min_len = 1];
+}
+
+message GetTransactionResponse {
+  Transaction transaction = 1;
+}
+
+message StartMethodRequest {
+  string tenant_id = 1 [(buf.validate.field).string.min_len = 1];
+  string transaction_id = 2 [(buf.validate.field).string.min_len = 1];
+  MethodSelection selection = 3 [(buf.validate.field).required = true];
+  // Driver-specific JSON decoded and validated for this method and operation.
+  // Use an empty object when the driver requires no input.
+  google.protobuf.Struct input = 4 [(buf.validate.field).required = true];
+}
+
+message StartMethodResponse {
+  Transaction transaction = 1;
+  // Absent for methods that do not create a challenge.
+  Challenge challenge = 2;
+  // Empty for methods that do not redirect the client.
+  string redirect_url = 3;
+  // Required reference for the following Verify or Callback request.
+  string attempt_id = 4;
+}
+
+message VerifyMethodRequest {
+  string tenant_id = 1 [(buf.validate.field).string.min_len = 1];
+  string transaction_id = 2 [(buf.validate.field).string.min_len = 1];
+  reserved 3;
+  reserved "selection";
+  // Omit for direct verification. When present, must match the stored attempt challenge.
+  optional string challenge_id = 4 [(buf.validate.field).string.min_len = 1];
+  // Driver-specific proof; never log this object.
+  google.protobuf.Struct input = 5 [(buf.validate.field).required = true];
+  string attempt_id = 6 [(buf.validate.field).string.min_len = 1];
+}
+
+message VerifyMethodResponse {
+  Transaction transaction = 1;
+  // Absent while further authentication or finalization is required.
+  AuthenticationResult result = 2;
+}
+
+message CompleteCallbackRequest {
+  string tenant_id = 1 [(buf.validate.field).string.min_len = 1];
+  string transaction_id = 2 [(buf.validate.field).string.min_len = 1];
+  // Method selection comes from this challenge, not from callback input.
+  string challenge_id = 3 [(buf.validate.field).string.min_len = 1];
+  // Host-parsed driver-specific callback proof; never log this object.
+  google.protobuf.Struct input = 4 [(buf.validate.field).required = true];
+  string attempt_id = 5 [(buf.validate.field).string.min_len = 1];
+}
+
+message CompleteCallbackResponse {
+  Transaction transaction = 1;
+  // Absent while further authentication or finalization is required.
+  AuthenticationResult result = 2;
+}
+
+// MethodSelection identifies one policy option within a requirement scope.
+message MethodSelection {
+  string requirement_id = 1 [(buf.validate.field).string.min_len = 1];
+  string method_id = 2 [(buf.validate.field).string.min_len = 1];
+  // Empty for methods without a provider.
+  string provider_id = 3;
+}
+
+// Transaction is a public progress view without credentials or verified evidence.
+message Transaction {
+  string id = 1;
+  string tenant_id = 2;
+  reserved 3; // Former string intent.
+  Intent intent = 10;
+  google.protobuf.Timestamp created_at = 4;
+  google.protobuf.Timestamp expires_at = 5;
+  // Options from the remaining policy that are currently available to this user.
+  // This list does not express whether the options are alternatives or cumulative.
+  repeated MethodSelection available_methods = 6;
+  // Policy satisfaction alone does not imply user resolution or finalization.
+  bool policy_satisfied = 7;
+  PendingMethod pending_attempt = 8;
+  string status = 9;
+}
+
+// Challenge identifies a pending attempt without exposing its private state.
+message Challenge {
+  string id = 1;
+  MethodSelection selection = 2;
+  google.protobuf.Timestamp expires_at = 3;
+}
+
+// Principal identifies the verified subject after successful finalization.
+message Principal {
+  string tenant_id = 1;
+  string user_id = 2;
+  google.protobuf.Timestamp authenticated_at = 3;
+}
+
+// IssuedSession contains a newly issued credential and its validity interval.
+message IssuedSession {
+  string id = 1;
+  // Sensitive bearer credential; never log or return in transaction reads.
+  string token = 2;
+  google.protobuf.Timestamp issued_at = 3;
+  google.protobuf.Timestamp expires_at = 4;
+}
+
+// AuthenticationResult is present only after the application finalizes the flow.
+message AuthenticationResult {
+  Principal principal = 1;
+  // Present when finalization issues a session for this intent.
+  IssuedSession session = 2;
+}
+
+message GetAuthPolicyRequest {
+  string tenant_id = 1 [(buf.validate.field).string.min_len = 1];
+}
+
+message GetAuthPolicyResponse {
+  // Sorted by intent name. Empty when no configured intent is visible.
+  repeated IntentPolicy intents = 1;
+}
+
+// IntentPolicy describes one caller-visible configured intent.
+message IntentPolicy {
+  reserved 1; // Former string intent.
+  Intent intent = 3;
+  PolicyRequirement requirements = 2;
+}
+
+// PolicyRequirement is a public requirement tree. Each node has exactly one
+// nonempty shape: any, all, or method. Groups preserve their configured IDs.
+// Descendants inherit the nearest nonempty ID as their MethodSelection scope.
+// Provider alternatives are represented as any children of method leaves.
+// An all group requires every child, but does not impose an execution order.
+message PolicyRequirement {
+  string id = 1;
+  repeated PolicyRequirement any = 2;
+  repeated PolicyRequirement all = 3;
+  string method = 4;
+  // Empty for methods without a provider. Set only on method leaves.
+  string provider = 5;
+}
+
+// PendingMethod allows clients to resume a started method without private driver state.
+message PendingMethod {
+  string attempt_id = 1;
+  MethodSelection selection = 2;
+  string challenge_id = 3;
+  bool ready = 4;
+}

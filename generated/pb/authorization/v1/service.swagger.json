@@ -1,0 +1,625 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "authorization/v1/service.proto",
+    "version": "version not set"
+  },
+  "tags": [
+    {
+      "name": "AuthenticationService",
+      "description": "AuthenticationService exposes authentication commands and progress queries.\nThe host must authorize access to each transaction independently of its ID."
+    }
+  ],
+  "consumes": [
+    "application/json"
+  ],
+  "produces": [
+    "application/json"
+  ],
+  "paths": {
+    "/v1/tenants/{tenantId}/auth/policy": {
+      "get": {
+        "summary": "GetAuthPolicy lists caller-visible intents and configured authentication choices.\nThis is a static description, not a guarantee of current method availability.",
+        "operationId": "AuthenticationService_GetAuthPolicy",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/authorization.v1.GetAuthPolicyResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/google.rpc.Status"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "tenantId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "AuthenticationService"
+        ]
+      }
+    },
+    "/v1/tenants/{tenantId}/auth/transactions": {
+      "post": {
+        "summary": "CreateTransaction starts a tenant-bound authentication transaction for a configured intent.",
+        "operationId": "AuthenticationService_CreateTransaction",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/authorization.v1.CreateTransactionResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/google.rpc.Status"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "tenantId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/authorization.v1.AuthenticationService.CreateTransactionBody"
+            }
+          }
+        ],
+        "tags": [
+          "AuthenticationService"
+        ]
+      }
+    },
+    "/v1/tenants/{tenantId}/auth/transactions/{transactionId}": {
+      "get": {
+        "summary": "GetTransaction reads progress without returning a session credential.",
+        "operationId": "AuthenticationService_GetTransaction",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/authorization.v1.GetTransactionResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/google.rpc.Status"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "tenantId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "transactionId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "AuthenticationService"
+        ]
+      }
+    },
+    "/v1/tenants/{tenantId}/auth/transactions/{transactionId}/challenges/{challengeId}:completeCallback": {
+      "post": {
+        "summary": "CompleteCallback dispatches host-parsed callback input to the stored method.\nThis is not a provider's raw redirect URI; proof and correlation are verified\nby the callback-capable driver before any evidence is accepted.",
+        "operationId": "AuthenticationService_CompleteCallback",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/authorization.v1.CompleteCallbackResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/google.rpc.Status"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "tenantId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "transactionId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "challengeId",
+            "description": "Method selection comes from this challenge, not from callback input.",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/authorization.v1.AuthenticationService.CompleteCallbackBody"
+            }
+          }
+        ],
+        "tags": [
+          "AuthenticationService"
+        ]
+      }
+    },
+    "/v1/tenants/{tenantId}/auth/transactions/{transactionId}:startMethod": {
+      "post": {
+        "summary": "StartMethod begins a selected method, optionally creating a challenge.",
+        "operationId": "AuthenticationService_StartMethod",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/authorization.v1.StartMethodResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/google.rpc.Status"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "tenantId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "transactionId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/authorization.v1.AuthenticationService.StartMethodBody"
+            }
+          }
+        ],
+        "tags": [
+          "AuthenticationService"
+        ]
+      }
+    },
+    "/v1/tenants/{tenantId}/auth/transactions/{transactionId}:verifyMethod": {
+      "post": {
+        "summary": "VerifyMethod verifies a direct proof or completes a pending challenge.",
+        "operationId": "AuthenticationService_VerifyMethod",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/authorization.v1.VerifyMethodResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/google.rpc.Status"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "tenantId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "transactionId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/authorization.v1.AuthenticationService.VerifyMethodBody"
+            }
+          }
+        ],
+        "tags": [
+          "AuthenticationService"
+        ]
+      }
+    }
+  },
+  "definitions": {
+    "authorization.v1.AuthenticationResult": {
+      "type": "object",
+      "properties": {
+        "principal": {
+          "$ref": "#/definitions/authorization.v1.Principal"
+        },
+        "session": {
+          "$ref": "#/definitions/authorization.v1.IssuedSession",
+          "description": "Present when finalization issues a session for this intent."
+        }
+      },
+      "description": "AuthenticationResult is present only after the application finalizes the flow."
+    },
+    "authorization.v1.AuthenticationService.CompleteCallbackBody": {
+      "type": "object",
+      "properties": {
+        "input": {
+          "type": "object",
+          "description": "Host-parsed driver-specific callback proof; never log this object."
+        },
+        "attemptId": {
+          "type": "string"
+        }
+      }
+    },
+    "authorization.v1.AuthenticationService.CreateTransactionBody": {
+      "type": "object",
+      "properties": {
+        "intent": {
+          "$ref": "#/definitions/authorization.v1.Intent",
+          "description": "An existing user is derived from trusted authentication context, never input."
+        }
+      }
+    },
+    "authorization.v1.AuthenticationService.StartMethodBody": {
+      "type": "object",
+      "properties": {
+        "selection": {
+          "$ref": "#/definitions/authorization.v1.MethodSelection"
+        },
+        "input": {
+          "type": "object",
+          "description": "Driver-specific JSON decoded and validated for this method and operation.\nUse an empty object when the driver requires no input."
+        }
+      }
+    },
+    "authorization.v1.AuthenticationService.VerifyMethodBody": {
+      "type": "object",
+      "properties": {
+        "challengeId": {
+          "type": "string",
+          "description": "Omit for direct verification. When present, must match the stored attempt challenge."
+        },
+        "input": {
+          "type": "object",
+          "description": "Driver-specific proof; never log this object."
+        },
+        "attemptId": {
+          "type": "string"
+        }
+      }
+    },
+    "authorization.v1.Challenge": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "selection": {
+          "$ref": "#/definitions/authorization.v1.MethodSelection"
+        },
+        "expiresAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "description": "Challenge identifies a pending attempt without exposing its private state."
+    },
+    "authorization.v1.CompleteCallbackResponse": {
+      "type": "object",
+      "properties": {
+        "transaction": {
+          "$ref": "#/definitions/authorization.v1.Transaction"
+        },
+        "result": {
+          "$ref": "#/definitions/authorization.v1.AuthenticationResult",
+          "description": "Absent while further authentication or finalization is required."
+        }
+      }
+    },
+    "authorization.v1.CreateTransactionResponse": {
+      "type": "object",
+      "properties": {
+        "transaction": {
+          "$ref": "#/definitions/authorization.v1.Transaction"
+        }
+      }
+    },
+    "authorization.v1.GetAuthPolicyResponse": {
+      "type": "object",
+      "properties": {
+        "intents": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/authorization.v1.IntentPolicy"
+          },
+          "description": "Sorted by intent name. Empty when no configured intent is visible."
+        }
+      }
+    },
+    "authorization.v1.GetTransactionResponse": {
+      "type": "object",
+      "properties": {
+        "transaction": {
+          "$ref": "#/definitions/authorization.v1.Transaction"
+        }
+      }
+    },
+    "authorization.v1.Intent": {
+      "type": "string",
+      "enum": [
+        "INTENT_UNSPECIFIED",
+        "INTENT_SIGN_UP",
+        "INTENT_SIGN_IN",
+        "INTENT_UPDATE",
+        "INTENT_DELETE"
+      ],
+      "default": "INTENT_UNSPECIFIED",
+      "description": "Intent identifies an account lifecycle flow, independently of authentication methods.\nDeclaring an intent does not imply that its application workflow is implemented."
+    },
+    "authorization.v1.IntentPolicy": {
+      "type": "object",
+      "properties": {
+        "intent": {
+          "$ref": "#/definitions/authorization.v1.Intent"
+        },
+        "requirements": {
+          "$ref": "#/definitions/authorization.v1.PolicyRequirement"
+        }
+      },
+      "description": "IntentPolicy describes one caller-visible configured intent."
+    },
+    "authorization.v1.IssuedSession": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "token": {
+          "type": "string",
+          "description": "Sensitive bearer credential; never log or return in transaction reads."
+        },
+        "issuedAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "expiresAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "description": "IssuedSession contains a newly issued credential and its validity interval."
+    },
+    "authorization.v1.MethodSelection": {
+      "type": "object",
+      "properties": {
+        "requirementId": {
+          "type": "string"
+        },
+        "methodId": {
+          "type": "string"
+        },
+        "providerId": {
+          "type": "string",
+          "description": "Empty for methods without a provider."
+        }
+      },
+      "description": "MethodSelection identifies one policy option within a requirement scope."
+    },
+    "authorization.v1.PendingMethod": {
+      "type": "object",
+      "properties": {
+        "attemptId": {
+          "type": "string"
+        },
+        "selection": {
+          "$ref": "#/definitions/authorization.v1.MethodSelection"
+        },
+        "challengeId": {
+          "type": "string"
+        },
+        "ready": {
+          "type": "boolean"
+        }
+      },
+      "description": "PendingMethod allows clients to resume a started method without private driver state."
+    },
+    "authorization.v1.PolicyRequirement": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "any": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/authorization.v1.PolicyRequirement"
+          }
+        },
+        "all": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/authorization.v1.PolicyRequirement"
+          }
+        },
+        "method": {
+          "type": "string"
+        },
+        "provider": {
+          "type": "string",
+          "description": "Empty for methods without a provider. Set only on method leaves."
+        }
+      },
+      "description": "PolicyRequirement is a public requirement tree. Each node has exactly one\nnonempty shape: any, all, or method. Groups preserve their configured IDs.\nDescendants inherit the nearest nonempty ID as their MethodSelection scope.\nProvider alternatives are represented as any children of method leaves.\nAn all group requires every child, but does not impose an execution order."
+    },
+    "authorization.v1.Principal": {
+      "type": "object",
+      "properties": {
+        "tenantId": {
+          "type": "string"
+        },
+        "userId": {
+          "type": "string"
+        },
+        "authenticatedAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "description": "Principal identifies the verified subject after successful finalization."
+    },
+    "authorization.v1.StartMethodResponse": {
+      "type": "object",
+      "properties": {
+        "transaction": {
+          "$ref": "#/definitions/authorization.v1.Transaction"
+        },
+        "challenge": {
+          "$ref": "#/definitions/authorization.v1.Challenge",
+          "description": "Absent for methods that do not create a challenge."
+        },
+        "redirectUrl": {
+          "type": "string",
+          "description": "Empty for methods that do not redirect the client."
+        },
+        "attemptId": {
+          "type": "string",
+          "description": "Required reference for the following Verify or Callback request."
+        }
+      }
+    },
+    "authorization.v1.Transaction": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "tenantId": {
+          "type": "string"
+        },
+        "intent": {
+          "$ref": "#/definitions/authorization.v1.Intent"
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "expiresAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "availableMethods": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/authorization.v1.MethodSelection"
+          },
+          "description": "Options from the remaining policy that are currently available to this user.\nThis list does not express whether the options are alternatives or cumulative."
+        },
+        "policySatisfied": {
+          "type": "boolean",
+          "description": "Policy satisfaction alone does not imply user resolution or finalization."
+        },
+        "pendingAttempt": {
+          "$ref": "#/definitions/authorization.v1.PendingMethod"
+        },
+        "status": {
+          "type": "string"
+        }
+      },
+      "description": "Transaction is a public progress view without credentials or verified evidence."
+    },
+    "authorization.v1.VerifyMethodResponse": {
+      "type": "object",
+      "properties": {
+        "transaction": {
+          "$ref": "#/definitions/authorization.v1.Transaction"
+        },
+        "result": {
+          "$ref": "#/definitions/authorization.v1.AuthenticationResult",
+          "description": "Absent while further authentication or finalization is required."
+        }
+      }
+    },
+    "google.protobuf.Any": {
+      "type": "object",
+      "properties": {
+        "@type": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": {}
+    },
+    "google.protobuf.NullValue": {
+      "type": "string",
+      "enum": [
+        "NULL_VALUE"
+      ],
+      "default": "NULL_VALUE",
+      "description": "`NullValue` is a singleton enumeration to represent the null value for the\n`Value` type union.\n\nThe JSON representation for `NullValue` is JSON `null`.\n\n - NULL_VALUE: Null value."
+    },
+    "google.rpc.Status": {
+      "type": "object",
+      "properties": {
+        "code": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "message": {
+          "type": "string"
+        },
+        "details": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/google.protobuf.Any"
+          }
+        }
+      }
+    }
+  }
+}

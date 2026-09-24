@@ -1,0 +1,15 @@
+syntax = "proto3";
+
+package authorization.v1;
+
+option go_package = "authorization/generated/pb/authorization/v1;authorizationv1";
+
+// Intent identifies an account lifecycle flow, independently of authentication methods.
+// Declaring an intent does not imply that its application workflow is implemented.
+enum Intent {
+  INTENT_UNSPECIFIED = 0;
+  INTENT_SIGN_UP = 1;
+  INTENT_SIGN_IN = 2;
+  INTENT_UPDATE = 3;
+  INTENT_DELETE = 4;
+}

@@ -1,0 +1,2 @@
+# Aggregate boundaries
+Use the approved aggregate table in ../../docs/event-storming/telegram-oauth.md and the existing pending-attempt model. No new aggregate or command mutates storage. Transaction identity is tenant plus transaction ID; its repository lock protects attempt, challenge, claim and evidence. Challenge is bounded owned state because acceptance and consumption must commit together. Existing User/Identity/Session references retain approved sign-in/sign-up semantics. No new event routes or architecture exceptions.

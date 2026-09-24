@@ -1,0 +1,43 @@
+# Driver catalog
+
+Choose implementations by the dependency they satisfy:
+
+| Component | Implementation | Constructor |
+| --- | --- | --- |
+| Authentication transactions | `transaction/inmem` | `New(manager)` |
+| Storage transactions | `transactionmanager/inmem` | `New()` |
+| Users | `user/inmem` | `New(manager)` |
+| Identities | `identity/inmem` | `New(manager)` |
+| Sessions | `session/inmem` | `NewSessionManager(tenant, lifetime)` |
+| Policies | `policy/configured` | `NewImplementation(policies, maxNodes)` |
+| Login/password | [`method/logpass`](method/logpass/README.md) | `New(identities, config)` |
+| Google OAuth | [`method/goth`](method/goth/README.md) | `New(config)` |
+| Authentication methods | `method/mock` | `NewPassword()`, `NewTOTP()` |
+
+```go
+manager := transactionmanager.New()
+deps := authorization.Dependencies{
+    TransactionManager: manager,
+    Transactions: transaction.New(manager),
+    Users: user.New(manager),
+    Identities: identity.New(manager),
+    Access: access,
+    Eligible: eligible,
+}
+```
+
+The import aliases above refer to each component's `inmem` package. See
+[`examples/main.go`](../examples/main.go) for complete wiring. Sessions are
+selected through `WithSessionManager`; methods through policy `Method` nodes.
+The constructor builds configured policies itself, so hosts normally do not
+construct the policy adapter directly.
+
+All cooperating in-memory repositories must receive the same manager. Data is
+process-local and transactions serialize across that manager. `driver/internal`
+contains shared storage mechanics, not an additional selectable driver.
+
+`method/mock` uses fixed Alice credentials (`test-password`, `123456`) solely for
+demonstrations. It does not implement password hashing or real TOTP. Its typed
+`Input` is decoded by the example's delivery adapter. Access and eligibility
+remain host callbacks. Challenges are part of the authentication transaction,
+so there is no independent challenge driver in this catalog.
