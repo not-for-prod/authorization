@@ -5,10 +5,10 @@ import (
 	"errors"
 	"testing"
 
-	"authorization/domain/application"
-	"authorization/domain/entity"
-	"authorization/domain/repository"
-	repositorymock "authorization/generated/mocks/repository"
+	"github.com/not-for-prod/authorization/domain/application"
+	"github.com/not-for-prod/authorization/domain/entity"
+	"github.com/not-for-prod/authorization/domain/repository"
+	repositorymock "github.com/not-for-prod/authorization/generated/mocks/repository"
 
 	"github.com/not-for-prod/proterror/proterror"
 )

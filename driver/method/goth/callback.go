@@ -12,8 +12,8 @@ import (
 	"github.com/not-for-prod/proterror/proterror"
 	"golang.org/x/oauth2"
 
-	"authorization/domain/entity"
-	"authorization/domain/gateway"
+	"github.com/not-for-prod/authorization/domain/entity"
+	"github.com/not-for-prod/authorization/domain/gateway"
 )
 
 // CallbackInput contains only provider callback fields. The host must reject

@@ -1,10 +1,10 @@
 package authorization
 
 import (
-	"authorization/domain/entity"
-	"authorization/domain/gateway"
-	"authorization/domain/repository"
-	"authorization/domain/service"
+	"github.com/not-for-prod/authorization/domain/entity"
+	"github.com/not-for-prod/authorization/domain/gateway"
+	"github.com/not-for-prod/authorization/domain/repository"
+	"github.com/not-for-prod/authorization/domain/service"
 )
 
 // Sentinel errors preserve errors.Is identity across the public and internal

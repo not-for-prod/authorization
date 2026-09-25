@@ -6,8 +6,8 @@ import (
 	"github.com/not-for-prod/proterror/proterror"
 	"google.golang.org/protobuf/types/known/structpb"
 
-	"authorization"
-	"authorization/driver/method/logpass"
+	"github.com/not-for-prod/authorization"
+	"github.com/not-for-prod/authorization/driver/method/logpass"
 )
 
 func decodeInput(

@@ -19,7 +19,7 @@ A persistent host must implement the port using Vibox with its storage transacti
 Keep record encoding, topic selection, partitioning and relay code in the host's
 infrastructure adapter. Partition by tenant and transaction ID, preserve event ID
 and aggregate version, and use at-least-once delivery with idempotent consumers.
-A production adapter is not provided until a concrete persistent host is introduced.
+`driver/event/pgx` provides this adapter using the same pgx transaction manager as the storage drivers. See [PostgreSQL and Redis drivers](postgres-redis-drivers.md) for migrations, topic contracts, and host wiring.
 
 Events describe committed user actions; they do not trigger authentication
 finalization. Verify and Callback synchronously issue an optional session outside

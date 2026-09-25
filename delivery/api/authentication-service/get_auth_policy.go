@@ -7,9 +7,9 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
-	"authorization/domain/application"
-	"authorization/domain/entity"
-	pb "authorization/generated/pb/authorization/v1"
+	"github.com/not-for-prod/authorization/domain/application"
+	"github.com/not-for-prod/authorization/domain/entity"
+	pb "github.com/not-for-prod/authorization/generated/pb/authorization/v1"
 )
 
 // Policies returned by the application are bounded value-node snapshots.

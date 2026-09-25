@@ -3,7 +3,7 @@ package repository
 import (
 	"context"
 
-	"authorization/domain/entity"
+	"github.com/not-for-prod/authorization/domain/entity"
 )
 
 // Transaction stores authentication transactions, including accumulated evidence.

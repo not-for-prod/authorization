@@ -3,8 +3,8 @@ package logpass
 import (
 	"context"
 
-	"authorization/domain/entity"
-	"authorization/domain/gateway"
+	"github.com/not-for-prod/authorization/domain/entity"
+	"github.com/not-for-prod/authorization/domain/gateway"
 )
 
 // StartInput starts a direct password attempt without collecting credentials.

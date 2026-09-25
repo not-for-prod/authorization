@@ -1,6 +1,6 @@
 package authorization
 
-import "authorization/domain/repository"
+import "github.com/not-for-prod/authorization/domain/repository"
 
 // TransactionRepository exposes the repository contract for host implementations.
 type TransactionRepository = repository.Transaction

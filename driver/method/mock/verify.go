@@ -4,7 +4,7 @@ import (
 	"context"
 	"time"
 
-	"authorization"
+	"github.com/not-for-prod/authorization"
 )
 
 func (m *Method) Verify(_ context.Context, tx authorization.Transaction, selection authorization.MethodSelection, _ *authorization.Challenge, input authorization.MethodInput) (authorization.VerificationResult, error) {

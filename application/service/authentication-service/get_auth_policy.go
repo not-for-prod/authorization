@@ -8,8 +8,8 @@ import (
 	"github.com/not-for-prod/observer/tracer/prospan"
 	"github.com/not-for-prod/proterror/proterror"
 
-	"authorization/domain/application"
-	"authorization/domain/entity"
+	"github.com/not-for-prod/authorization/domain/application"
+	"github.com/not-for-prod/authorization/domain/entity"
 )
 
 func (i *Implementation) GetAuthPolicy(ctx context.Context, req application.GetAuthPolicyRequest) (*application.GetAuthPolicyResponse, error) {

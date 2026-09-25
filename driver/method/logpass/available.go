@@ -3,7 +3,7 @@ package logpass
 import (
 	"context"
 
-	"authorization/domain/entity"
+	"github.com/not-for-prod/authorization/domain/entity"
 )
 
 // Available does not inspect identities or perform password hashing.

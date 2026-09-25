@@ -1,6 +1,6 @@
 package authorization
 
-import "authorization/domain/application"
+import "github.com/not-for-prod/authorization/domain/application"
 
 // Authentication exposes the application contract for host implementations.
 type Authentication = application.Authentication

@@ -1,8 +1,7 @@
 # Authentication storage contracts
 
 Storage interfaces live under [domain/repository](../domain/repository).
-The host supplies implementations. These are ports, not database implementations,
-and no migration or infrastructure dependency is introduced.
+The host supplies implementations. Optional [PostgreSQL and Redis drivers](postgres-redis-drivers.md) now provide concrete implementations and migrations through the existing ports.
 
 | Interface | Operations | Purpose |
 | --- | --- | --- |
@@ -57,8 +56,7 @@ final principal, and completion operation.
 Its repository must persist them atomically under the transaction root lock.
 Challenge consumption and evidence acceptance cannot be committed separately.
 The `Challenge` projection has no write methods and is not used by orchestration.
-User and Identity repositories are read-only in the implemented authentication
-flows. Session persistence belongs to the idempotent session gateway.
+User and Identity repositories are read-only during SIGN_IN and participate in atomic account creation during SIGN_UP. Session persistence belongs to the idempotent session gateway.
 
 `Transaction.Copy()` returns an independent snapshot of root-owned state, excluding
 unpublished events. The application passes `Transaction.Events()` to `EventPublisher`

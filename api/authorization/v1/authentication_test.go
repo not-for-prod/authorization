@@ -3,7 +3,7 @@ package authorization_test
 import (
 	"testing"
 
-	pb "authorization/generated/pb/authorization/v1"
+	pb "github.com/not-for-prod/authorization/generated/pb/authorization/v1"
 
 	"buf.build/go/protovalidate"
 	"google.golang.org/protobuf/encoding/protojson"

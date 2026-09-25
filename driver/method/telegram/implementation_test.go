@@ -5,8 +5,8 @@ import (
 	"testing"
 	"time"
 
-	"authorization/domain/entity"
-	"authorization/domain/gateway"
+	"github.com/not-for-prod/authorization/domain/entity"
+	"github.com/not-for-prod/authorization/domain/gateway"
 )
 
 func TestConfigurationAndAvailability(t *testing.T) {

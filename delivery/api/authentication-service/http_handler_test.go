@@ -14,12 +14,12 @@ import (
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/structpb"
 
-	appservice "authorization/application/service/authentication-service"
-	apiservice "authorization/delivery/api/authentication-service"
-	"authorization/domain/entity"
-	"authorization/domain/gateway"
-	pb "authorization/generated/pb/authorization/v1"
-	"authorization/internal/testutil/authfixture"
+	appservice "github.com/not-for-prod/authorization/application/service/authentication-service"
+	apiservice "github.com/not-for-prod/authorization/delivery/api/authentication-service"
+	"github.com/not-for-prod/authorization/domain/entity"
+	"github.com/not-for-prod/authorization/domain/gateway"
+	pb "github.com/not-for-prod/authorization/generated/pb/authorization/v1"
+	"github.com/not-for-prod/authorization/internal/testutil/authfixture"
 )
 
 func handler(t *testing.T, f *authfixture.Fixture) (*apiservice.Implementation, http.Handler) {

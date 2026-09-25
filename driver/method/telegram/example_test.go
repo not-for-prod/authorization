@@ -3,8 +3,8 @@ package telegram_test
 import (
 	"fmt"
 
-	"authorization"
-	"authorization/driver/method/telegram"
+	"github.com/not-for-prod/authorization"
+	"github.com/not-for-prod/authorization/driver/method/telegram"
 )
 
 func ExampleNew() {

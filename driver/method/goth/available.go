@@ -1,7 +1,7 @@
 package goth
 
 import (
-	"authorization/domain/entity"
+	"github.com/not-for-prod/authorization/domain/entity"
 	"context"
 )
 

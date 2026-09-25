@@ -5,9 +5,9 @@ import (
 	"net/http"
 	"testing"
 
-	"authorization/domain/entity"
-	pb "authorization/generated/pb/authorization/v1"
-	"authorization/internal/testutil/authfixture"
+	"github.com/not-for-prod/authorization/domain/entity"
+	pb "github.com/not-for-prod/authorization/generated/pb/authorization/v1"
+	"github.com/not-for-prod/authorization/internal/testutil/authfixture"
 
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"

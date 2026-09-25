@@ -3,7 +3,7 @@ package mock
 import (
 	"context"
 
-	"authorization"
+	"github.com/not-for-prod/authorization"
 )
 
 func (*Method) Start(context.Context, authorization.Transaction, authorization.MethodSelection, authorization.MethodInput) (authorization.StartResult, error) {

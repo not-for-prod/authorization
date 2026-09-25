@@ -1,6 +1,6 @@
 package authorization
 
-import "authorization/domain/gateway"
+import "github.com/not-for-prod/authorization/domain/gateway"
 
 // SessionManager exposes the gateway contract for host implementations.
 type SessionManager = gateway.SessionManager

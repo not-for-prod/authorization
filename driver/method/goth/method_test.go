@@ -12,9 +12,9 @@ import (
 	"testing"
 	"time"
 
-	"authorization/domain/entity"
-	"authorization/domain/gateway"
-	oauth "authorization/driver/method/goth"
+	"github.com/not-for-prod/authorization/domain/entity"
+	"github.com/not-for-prod/authorization/domain/gateway"
+	oauth "github.com/not-for-prod/authorization/driver/method/goth"
 )
 
 type transportFunc func(*http.Request) (*http.Response, error)

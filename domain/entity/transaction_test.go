@@ -6,7 +6,7 @@ import (
 	"testing"
 	"time"
 
-	"authorization/domain/entity"
+	"github.com/not-for-prod/authorization/domain/entity"
 )
 
 func transaction(t *testing.T) (*entity.Transaction, time.Time, entity.MethodSelection) {

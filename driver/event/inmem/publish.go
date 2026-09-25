@@ -4,8 +4,8 @@ import (
 	"context"
 	"reflect"
 
-	"authorization/domain/entity"
-	"authorization/driver/internal/memory"
+	"github.com/not-for-prod/authorization/domain/entity"
+	"github.com/not-for-prod/authorization/driver/internal/memory"
 )
 
 func (p *Publisher) Publish(ctx context.Context, events []entity.TransactionEvent) error {

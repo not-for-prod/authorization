@@ -2,8 +2,8 @@
 package inmem
 
 import (
-	"authorization/domain/repository"
-	manager "authorization/driver/transactionmanager/inmem"
+	"github.com/not-for-prod/authorization/domain/repository"
+	manager "github.com/not-for-prod/authorization/driver/transactionmanager/inmem"
 )
 
 type Publisher struct{ manager *manager.Manager }

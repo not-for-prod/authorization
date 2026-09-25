@@ -7,12 +7,12 @@ import (
 	"testing"
 	"time"
 
-	"authorization/domain/entity"
-	"authorization/domain/gateway"
-	"authorization/domain/repository"
-	"authorization/domain/service"
-	gatewaymock "authorization/generated/mocks/gateway"
-	repositorymock "authorization/generated/mocks/repository"
+	"github.com/not-for-prod/authorization/domain/entity"
+	"github.com/not-for-prod/authorization/domain/gateway"
+	"github.com/not-for-prod/authorization/domain/repository"
+	"github.com/not-for-prod/authorization/domain/service"
+	gatewaymock "github.com/not-for-prod/authorization/generated/mocks/gateway"
+	repositorymock "github.com/not-for-prod/authorization/generated/mocks/repository"
 )
 
 type demoMethodInput struct {

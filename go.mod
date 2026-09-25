@@ -1,17 +1,23 @@
-module authorization
+module github.com/not-for-prod/authorization
 
 go 1.26.0
 
 require (
 	buf.build/gen/go/bufbuild/protovalidate/protocolbuffers/go v1.36.12-20260825204119-511051f7f437.2
 	buf.build/go/protovalidate v1.4.0
+	github.com/avito-tech/go-transaction-manager/drivers/pgxv5/v2 v2.0.2
+	github.com/avito-tech/go-transaction-manager/trm/v2 v2.0.4
 	github.com/go-jose/go-jose/v4 v4.1.4
 	github.com/go-resty/resty/v2 v2.17.2
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.29.0
+	github.com/jackc/pgx/v5 v5.10.0
 	github.com/markbates/goth v1.82.0
 	github.com/not-for-prod/clay v0.4.1-0.20260422142056-8d218840c9a9
 	github.com/not-for-prod/observer v0.0.7
 	github.com/not-for-prod/proterror v0.0.0-20260422102916-c98886aea21e
+	github.com/not-for-prod/vibox v0.0.0-20260716170841-1cd812ffae79
+	github.com/redis/go-redis/v9 v9.22.0
+	go.opentelemetry.io/otel v1.44.0
 	golang.org/x/crypto v0.55.0
 	golang.org/x/oauth2 v0.36.0
 	google.golang.org/genproto/googleapis/api v0.0.0-20260819154853-08b0e4226688
@@ -41,6 +47,10 @@ require (
 	github.com/go-openapi/swag/typeutils v0.25.5 // indirect
 	github.com/go-openapi/swag/yamlutils v0.25.5 // indirect
 	github.com/grpc-ecosystem/go-grpc-middleware v1.4.0 // indirect
+	github.com/jackc/pgerrcode v0.0.0-20250907135507-afb5586c32a6 // indirect
+	github.com/jackc/pgpassfile v1.0.0 // indirect
+	github.com/jackc/pgservicefile v0.0.0-20240606120523-5a60cdf6a761 // indirect
+	github.com/jackc/puddle/v2 v2.2.2 // indirect
 	github.com/munnerz/goautoneg v0.0.0-20191010083416-a7dc8b61c822 // indirect
 	github.com/peterbourgon/mergemap v0.0.1 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
@@ -53,9 +63,10 @@ require (
 	github.com/swaggo/http-swagger v1.3.4 // indirect
 	github.com/swaggo/swag v1.16.6 // indirect
 	go.opentelemetry.io/auto/sdk v1.2.1 // indirect
-	go.opentelemetry.io/otel v1.39.0 // indirect
-	go.opentelemetry.io/otel/metric v1.39.0 // indirect
-	go.opentelemetry.io/otel/trace v1.39.0 // indirect
+	go.opentelemetry.io/otel/metric v1.44.0 // indirect
+	go.opentelemetry.io/otel/trace v1.44.0 // indirect
+	go.uber.org/atomic v1.11.0 // indirect
+	go.uber.org/multierr v1.11.0 // indirect
 	go.yaml.in/yaml/v2 v2.4.4 // indirect
 	go.yaml.in/yaml/v3 v3.0.5 // indirect
 	golang.org/x/exp v0.0.0-20260820142414-ca536658362e // indirect

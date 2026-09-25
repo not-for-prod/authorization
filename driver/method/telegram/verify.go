@@ -4,8 +4,8 @@ import (
 	"context"
 	"errors"
 
-	"authorization/domain/entity"
-	"authorization/domain/gateway"
+	"github.com/not-for-prod/authorization/domain/entity"
+	"github.com/not-for-prod/authorization/domain/gateway"
 
 	"github.com/not-for-prod/observer/tracer/prospan"
 	"github.com/not-for-prod/proterror/proterror"

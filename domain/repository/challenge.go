@@ -3,7 +3,7 @@ package repository
 import (
 	"context"
 
-	"authorization/domain/entity"
+	"github.com/not-for-prod/authorization/domain/entity"
 )
 
 // Challenge is an optional read projection of a transaction-owned attempt.

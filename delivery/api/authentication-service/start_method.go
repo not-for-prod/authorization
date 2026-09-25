@@ -3,9 +3,9 @@ package authenticationservice
 import (
 	"context"
 
-	"authorization/domain/application"
-	"authorization/domain/entity"
-	pb "authorization/generated/pb/authorization/v1"
+	"github.com/not-for-prod/authorization/domain/application"
+	"github.com/not-for-prod/authorization/domain/entity"
+	pb "github.com/not-for-prod/authorization/generated/pb/authorization/v1"
 
 	"github.com/not-for-prod/observer/tracer/prospan"
 	"google.golang.org/protobuf/types/known/timestamppb"

@@ -6,8 +6,8 @@ import (
 
 	"github.com/not-for-prod/proterror/proterror"
 
-	"authorization/domain/entity"
-	"authorization/domain/repository"
+	"github.com/not-for-prod/authorization/domain/entity"
+	"github.com/not-for-prod/authorization/domain/repository"
 )
 
 func (i *Implementation) Get(ctx context.Context, tenant entity.TenantID, intent entity.Intent) (*entity.Policy, error) {

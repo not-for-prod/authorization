@@ -8,10 +8,10 @@ import (
 
 	"golang.org/x/crypto/bcrypt"
 
-	auth "authorization"
-	"authorization/domain/repository"
-	"authorization/driver/method/logpass"
-	repositorymock "authorization/generated/mocks/repository"
+	auth "github.com/not-for-prod/authorization"
+	"github.com/not-for-prod/authorization/domain/repository"
+	"github.com/not-for-prod/authorization/driver/method/logpass"
+	repositorymock "github.com/not-for-prod/authorization/generated/mocks/repository"
 )
 
 func TestDefaultPasswordVerification(t *testing.T) {

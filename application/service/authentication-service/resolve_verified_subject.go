@@ -1,9 +1,9 @@
 package authenticationservice
 
 import (
-	"authorization/domain/entity"
-	"authorization/domain/gateway"
-	"authorization/domain/repository"
+	"github.com/not-for-prod/authorization/domain/entity"
+	"github.com/not-for-prod/authorization/domain/gateway"
+	"github.com/not-for-prod/authorization/domain/repository"
 	"context"
 	"errors"
 )

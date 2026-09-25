@@ -9,7 +9,7 @@ PROTO_FILES := $(shell find api -type f -name '*.proto' 2>/dev/null)
 
 GOOSE ?= go run github.com/pressly/goose/v3/cmd/goose@$(GOOSE_VERSION)
 XO ?= go run github.com/not-for-prod/xo@$(XO_VERSION)
-TOOLS_BIN_DIR ?= /tmp/wallet-protect-tools
+TOOLS_BIN_DIR ?= /tmp/authorization-drivers-tools
 GOIMPORTS_DIR = $(TOOLS_BIN_DIR)/goimports-$(GOIMPORTS_VERSION)
 GOIMPORTS_BIN = $(GOIMPORTS_DIR)/goimports
 
@@ -51,13 +51,13 @@ init: dependency
 # INFRASTRUCTURE
 # ==================================================================================== #
 
-COMPOSE_PROJECT ?= wallet-protect
+COMPOSE_PROJECT ?= authorization-drivers
 COMPOSE_FILE ?= ./build/docker-compose.yaml
 COMPOSE = docker compose --project-name $(COMPOSE_PROJECT) --file $(COMPOSE_FILE)
 
 .PHONY: infra
 infra:
-	$(COMPOSE) up -d --wait postgres
+	$(COMPOSE) up -d --wait postgres redis
 
 .PHONY: infra-all
 infra-all:
@@ -65,7 +65,7 @@ infra-all:
 
 .PHONY: infra-stop
 infra-stop:
-	$(COMPOSE) stop postgres
+	$(COMPOSE) stop postgres redis
 
 .PHONY: infra-down
 infra-down:
@@ -76,10 +76,10 @@ infra-down:
 # ==================================================================================== #
 
 DB_HOST ?= 127.0.0.1
-DB_NAME ?= wallet_protect
+DB_NAME ?= authorization
 DB_PASS ?= postgres
 DB_USER ?= postgres
-DB_PORT ?= 55439
+DB_PORT ?= 55449
 DB_DSN = host=$(DB_HOST) port=$(DB_PORT) user=$(DB_USER) password=$(DB_PASS) sslmode=disable dbname=$(DB_NAME)
 DB_URL = postgres://$(DB_USER):$(DB_PASS)@$(DB_HOST):$(DB_PORT)/$(DB_NAME)?sslmode=disable
 MIGRATION_FOLDER ?= ./tools/migrations
@@ -94,7 +94,7 @@ migrations-status:
 
 .PHONY: migrations-test
 migrations-test:
-	MIGRATION_TEST_DATABASE_URL='$(DB_URL)' go test ./tools/migrations -count=1
+	AUTHORIZATION_TEST_DATABASE_URL='$(DB_URL)' go test ./tools/migrations -count=1
 
 .PHONY: migrations-reset ## накатывает миграции на базу данных
 migrations-reset:
@@ -117,8 +117,7 @@ xo: $(GOIMPORTS_BIN)
 	rm -rf $(XO_STAGING_PATH)
 	mkdir -p $(XO_STAGING_PATH)
 	PATH="$(GOIMPORTS_DIR):$$PATH" $(XO) "$(DB_URL)" \
-	-o $(XO_STAGING_PATH) --package xo --template-path $(XO_TEMPLATE_PATH) --schema public --suffix ".xo.go" \
-	--custom-type-package custom
+	-o $(XO_STAGING_PATH) --package xo --template-path $(XO_TEMPLATE_PATH) --schema public --suffix ".xo.go"
 	rm -rf $(XO_OUTPUT_PATH)
 	mv $(XO_STAGING_PATH) $(XO_OUTPUT_PATH)
 
@@ -141,12 +140,18 @@ generate: pb xo
 # LINTER
 # ==================================================================================== #
 
+GOLANGCI_LINT ?= golangci-lint
+
 linter:
-	golangci-lint --config .golangci.yaml run
+	$(GOLANGCI_LINT) --config .golangci.yaml run
 
 fmt:
-	golangci-lint --config .golangci.yaml fmt
+	$(GOLANGCI_LINT) --config .golangci.yaml fmt
 
 .PHONY: skills-validate
 skills-validate:
 	python3 .agents/scripts/validate_skills.py
+
+.PHONY: drivers-test
+drivers-test:
+	AUTHORIZATION_TEST_DATABASE_URL='$(DB_URL)' AUTHORIZATION_TEST_REDIS_ADDR='127.0.0.1:$(or $(REDIS_PORT),56389)' go test -race ./driver/transactionmanager/pgx ./driver/session/redis ./internal/pkg/convert ./tools/migrations

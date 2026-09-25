@@ -1,6 +1,6 @@
 package authorization
 
-import "authorization/domain/entity"
+import "github.com/not-for-prod/authorization/domain/entity"
 
 type TransactionEvent = entity.TransactionEvent
 type TransactionSnapshot = entity.TransactionSnapshot

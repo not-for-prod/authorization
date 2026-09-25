@@ -40,7 +40,10 @@ a stateful test fixture for root locking, rollback, and idempotent issuance.
 Mocks and fixtures are not production adapters. Optional process-local drivers
 are cataloged by dependency under `driver/transaction`, `driver/user`,
 `driver/identity`, `driver/transactionmanager`, `driver/event`, and `driver/session`; demo method
-drivers live under `driver/method/mock`. The production-facing
+drivers live under `driver/method/mock`. Optional
+[pgx PostgreSQL and Redis session drivers](../postgres-redis-drivers.md) provide
+durable storage, a Vibox outbox, migrations, and recoverable opaque sessions.
+The production-facing
 [`driver/method/logpass`](../../driver/method/logpass/README.md) verifies SIGN_IN
 against identity-owned optional `PasswordHash` values using a default bcrypt
 verifier or a host-configured verifier. Issuer defaults to `local`, and the driver

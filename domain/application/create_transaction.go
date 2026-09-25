@@ -3,7 +3,7 @@ package application
 import (
 	"github.com/not-for-prod/proterror/proterror"
 
-	"authorization/domain/entity"
+	"github.com/not-for-prod/authorization/domain/entity"
 )
 
 // CreateTransactionRequest selects the tenant and intent for a new authentication transaction.

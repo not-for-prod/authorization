@@ -3,7 +3,7 @@ package repository
 import (
 	"context"
 
-	"authorization/domain/entity"
+	"github.com/not-for-prod/authorization/domain/entity"
 )
 
 // EventPublisher atomically records events in the transaction used to persist their aggregate.

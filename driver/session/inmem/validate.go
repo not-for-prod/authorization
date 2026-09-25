@@ -5,7 +5,7 @@ import (
 
 	"github.com/not-for-prod/proterror/proterror"
 
-	"authorization"
+	"github.com/not-for-prod/authorization"
 )
 
 func (s *SessionManager) Validate(ctx context.Context, token string) (authorization.Session, error) {

@@ -8,11 +8,11 @@ import (
 	"testing"
 	"time"
 
-	"authorization"
-	identityinmem "authorization/driver/identity/inmem"
-	transactioninmem "authorization/driver/transaction/inmem"
-	managerinmem "authorization/driver/transactionmanager/inmem"
-	userinmem "authorization/driver/user/inmem"
+	"github.com/not-for-prod/authorization"
+	identityinmem "github.com/not-for-prod/authorization/driver/identity/inmem"
+	transactioninmem "github.com/not-for-prod/authorization/driver/transaction/inmem"
+	managerinmem "github.com/not-for-prod/authorization/driver/transactionmanager/inmem"
+	userinmem "github.com/not-for-prod/authorization/driver/user/inmem"
 )
 
 func TestCommitRollbackAndIdentityUniqueness(t *testing.T) {

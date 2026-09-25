@@ -10,8 +10,8 @@ import (
 	"github.com/not-for-prod/proterror/proterror"
 	"golang.org/x/crypto/bcrypt"
 
-	"authorization/domain/gateway"
-	"authorization/domain/repository"
+	"github.com/not-for-prod/authorization/domain/gateway"
+	"github.com/not-for-prod/authorization/domain/repository"
 )
 
 const (

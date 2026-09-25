@@ -3,7 +3,7 @@ package memory
 import (
 	"context"
 
-	"authorization/domain/repository"
+	"github.com/not-for-prod/authorization/domain/repository"
 )
 
 // Access holds either the transaction scope or store lock until release. Escaped

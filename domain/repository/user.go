@@ -3,7 +3,7 @@ package repository
 import (
 	"context"
 
-	"authorization/domain/entity"
+	"github.com/not-for-prod/authorization/domain/entity"
 )
 
 // User stores canonical users. User IDs are global in the current domain model.

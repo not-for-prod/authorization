@@ -5,8 +5,8 @@ import (
 	"errors"
 	"testing"
 
-	"authorization"
-	"authorization/driver/method/mock"
+	"github.com/not-for-prod/authorization"
+	"github.com/not-for-prod/authorization/driver/method/mock"
 )
 
 func TestDemoProofs(t *testing.T) {

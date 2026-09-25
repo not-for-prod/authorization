@@ -1,6 +1,6 @@
 package authorization
 
-import "authorization/domain/entity"
+import "github.com/not-for-prod/authorization/domain/entity"
 
 // UserID exposes the entity contract for host implementations.
 type UserID = entity.UserID

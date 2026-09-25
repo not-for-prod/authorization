@@ -7,7 +7,7 @@ import (
 
 	"github.com/not-for-prod/proterror/proterror"
 
-	"authorization"
+	"github.com/not-for-prod/authorization"
 )
 
 func (s *SessionManager) Create(ctx context.Context, req authorization.CreateSessionRequest) (authorization.IssuedSession, error) {

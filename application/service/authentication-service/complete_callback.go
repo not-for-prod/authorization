@@ -8,10 +8,10 @@ import (
 	"github.com/not-for-prod/observer/tracer/prospan"
 	"github.com/not-for-prod/proterror/proterror"
 
-	"authorization/domain/application"
-	"authorization/domain/entity"
-	"authorization/domain/gateway"
-	"authorization/domain/repository"
+	"github.com/not-for-prod/authorization/domain/application"
+	"github.com/not-for-prod/authorization/domain/entity"
+	"github.com/not-for-prod/authorization/domain/gateway"
+	"github.com/not-for-prod/authorization/domain/repository"
 )
 
 func (i *Implementation) CompleteCallback(

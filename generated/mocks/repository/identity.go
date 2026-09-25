@@ -4,8 +4,8 @@
 package repositorymock
 
 import (
-	"authorization/domain/entity"
-	"authorization/domain/repository"
+	"github.com/not-for-prod/authorization/domain/entity"
+	"github.com/not-for-prod/authorization/domain/repository"
 	"context"
 	"sync"
 )

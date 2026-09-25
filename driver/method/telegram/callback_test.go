@@ -19,8 +19,8 @@ import (
 	"testing"
 	"time"
 
-	"authorization/domain/entity"
-	"authorization/domain/gateway"
+	"github.com/not-for-prod/authorization/domain/entity"
+	"github.com/not-for-prod/authorization/domain/gateway"
 
 	jose "github.com/go-jose/go-jose/v4"
 	"github.com/go-jose/go-jose/v4/jwt"

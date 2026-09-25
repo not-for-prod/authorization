@@ -3,8 +3,8 @@ package goth_test
 import (
 	"fmt"
 
-	auth "authorization"
-	oauth "authorization/driver/method/goth"
+	auth "github.com/not-for-prod/authorization"
+	oauth "github.com/not-for-prod/authorization/driver/method/goth"
 )
 
 func ExampleNew() {

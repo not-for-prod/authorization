@@ -6,7 +6,7 @@ import (
 	"testing"
 	"time"
 
-	"authorization"
+	"github.com/not-for-prod/authorization"
 )
 
 func TestSessionLifecycle(t *testing.T) {

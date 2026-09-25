@@ -8,9 +8,9 @@ import (
 
 	"github.com/not-for-prod/proterror/proterror"
 
-	authenticationservice "authorization/application/service/authentication-service"
-	"authorization/domain/service"
-	configuredpolicy "authorization/driver/policy/configured"
+	authenticationservice "github.com/not-for-prod/authorization/application/service/authentication-service"
+	"github.com/not-for-prod/authorization/domain/service"
+	configuredpolicy "github.com/not-for-prod/authorization/driver/policy/configured"
 )
 
 // Dependencies are host-owned ports. Callbacks and adapters must be safe for

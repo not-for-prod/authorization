@@ -3,10 +3,10 @@ package authenticationservice
 import (
 	"context"
 
-	"authorization/domain/application"
-	"authorization/domain/entity"
-	"authorization/domain/gateway"
-	pb "authorization/generated/pb/authorization/v1"
+	"github.com/not-for-prod/authorization/domain/application"
+	"github.com/not-for-prod/authorization/domain/entity"
+	"github.com/not-for-prod/authorization/domain/gateway"
+	pb "github.com/not-for-prod/authorization/generated/pb/authorization/v1"
 
 	"github.com/not-for-prod/observer/tracer/prospan"
 )

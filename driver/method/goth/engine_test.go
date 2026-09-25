@@ -11,16 +11,16 @@ import (
 	"testing"
 	"time"
 
-	auth "authorization"
-	"authorization/domain/entity"
-	"authorization/domain/repository"
-	events "authorization/driver/event/inmem"
-	identities "authorization/driver/identity/inmem"
-	oauth "authorization/driver/method/goth"
-	sessions "authorization/driver/session/inmem"
-	transactions "authorization/driver/transaction/inmem"
-	manager "authorization/driver/transactionmanager/inmem"
-	users "authorization/driver/user/inmem"
+	auth "github.com/not-for-prod/authorization"
+	"github.com/not-for-prod/authorization/domain/entity"
+	"github.com/not-for-prod/authorization/domain/repository"
+	events "github.com/not-for-prod/authorization/driver/event/inmem"
+	identities "github.com/not-for-prod/authorization/driver/identity/inmem"
+	oauth "github.com/not-for-prod/authorization/driver/method/goth"
+	sessions "github.com/not-for-prod/authorization/driver/session/inmem"
+	transactions "github.com/not-for-prod/authorization/driver/transaction/inmem"
+	manager "github.com/not-for-prod/authorization/driver/transactionmanager/inmem"
+	users "github.com/not-for-prod/authorization/driver/user/inmem"
 )
 
 type transactionContextKey struct{}

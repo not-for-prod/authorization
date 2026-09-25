@@ -1,6 +1,6 @@
 package authorization
 
-import "authorization/domain/gateway"
+import "github.com/not-for-prod/authorization/domain/gateway"
 
 // AuthenticationMethod is a host-configured authentication driver.
 type AuthenticationMethod = gateway.Method

@@ -5,7 +5,7 @@ import (
 	"errors"
 	"fmt"
 
-	"authorization/domain/entity"
+	"github.com/not-for-prod/authorization/domain/entity"
 )
 
 var (

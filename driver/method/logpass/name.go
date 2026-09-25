@@ -1,5 +1,5 @@
 package logpass
 
-import "authorization/domain/entity"
+import "github.com/not-for-prod/authorization/domain/entity"
 
 func (*Method) Name() entity.MethodID { return "password" }

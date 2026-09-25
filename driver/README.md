@@ -4,6 +4,13 @@ Choose implementations by the dependency they satisfy:
 
 | Component | Implementation | Constructor |
 | --- | --- | --- |
+| Authentication transactions | `transaction/pgx` | `New(manager)` |
+| Storage transactions | `transactionmanager/pgx` | `New(pool)` |
+| Users | `user/pgx` | `New(manager)` |
+| Identities | `identity/pgx` | `New(manager)` |
+| Durable events | `event/pgx` | `New(ctx, manager)` |
+| Redis sessions | `session/redis` | `NewSessionManager(client, tenant, lifetime)` |
+| In-memory events | `event/inmem` | `New(manager)` |
 | Authentication transactions | `transaction/inmem` | `New(manager)` |
 | Storage transactions | `transactionmanager/inmem` | `New()` |
 | Users | `user/inmem` | `New(manager)` |
@@ -17,6 +24,7 @@ Choose implementations by the dependency they satisfy:
 ```go
 manager := transactionmanager.New()
 deps := authorization.Dependencies{
+    Events: event.New(manager),
     TransactionManager: manager,
     Transactions: transaction.New(manager),
     Users: user.New(manager),
@@ -41,3 +49,5 @@ demonstrations. It does not implement password hashing or real TOTP. Its typed
 `Input` is decoded by the example's delivery adapter. Access and eligibility
 remain host callbacks. Challenges are part of the authentication transaction,
 so there is no independent challenge driver in this catalog.
+
+See [PostgreSQL and Redis drivers](../docs/postgres-redis-drivers.md) for durable storage, migrations, session recovery, and integration tests.

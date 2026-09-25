@@ -4,7 +4,7 @@ import (
 	"context"
 	"time"
 
-	"authorization/domain/entity"
+	"github.com/not-for-prod/authorization/domain/entity"
 
 	"github.com/not-for-prod/observer/tracer/prospan"
 )

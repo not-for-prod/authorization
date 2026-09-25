@@ -5,9 +5,9 @@ import (
 	"errors"
 	"testing"
 
-	"authorization/domain/entity"
-	"authorization/domain/repository"
-	configuredpolicy "authorization/driver/policy/configured"
+	"github.com/not-for-prod/authorization/domain/entity"
+	"github.com/not-for-prod/authorization/domain/repository"
+	configuredpolicy "github.com/not-for-prod/authorization/driver/policy/configured"
 )
 
 func TestIndependentPolicySnapshots(t *testing.T) {

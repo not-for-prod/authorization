@@ -3,8 +3,8 @@ package application
 import (
 	"github.com/not-for-prod/proterror/proterror"
 
-	"authorization/domain/entity"
-	"authorization/domain/gateway"
+	"github.com/not-for-prod/authorization/domain/entity"
+	"github.com/not-for-prod/authorization/domain/gateway"
 )
 
 // VerifyMethodRequest supplies proof for a stored method attempt.

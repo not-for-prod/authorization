@@ -1,7 +1,7 @@
 package mock
 
 import (
-	"authorization"
+	"github.com/not-for-prod/authorization"
 )
 
 func (m *Method) Name() authorization.MethodID { return m.id }

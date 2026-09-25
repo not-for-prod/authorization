@@ -7,8 +7,8 @@ import (
 
 	"github.com/not-for-prod/proterror/proterror"
 
-	"authorization/domain/entity"
-	"authorization/domain/repository"
+	"github.com/not-for-prod/authorization/domain/entity"
+	"github.com/not-for-prod/authorization/domain/repository"
 )
 
 type contextKey struct{}

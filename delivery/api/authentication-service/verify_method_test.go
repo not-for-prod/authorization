@@ -4,12 +4,12 @@ import (
 	"context"
 	"testing"
 
-	apiservice "authorization/delivery/api/authentication-service"
-	"authorization/domain/application"
-	"authorization/domain/entity"
-	"authorization/domain/gateway"
-	pb "authorization/generated/pb/authorization/v1"
-	"authorization/internal/testutil/authfixture"
+	apiservice "github.com/not-for-prod/authorization/delivery/api/authentication-service"
+	"github.com/not-for-prod/authorization/domain/application"
+	"github.com/not-for-prod/authorization/domain/entity"
+	"github.com/not-for-prod/authorization/domain/gateway"
+	pb "github.com/not-for-prod/authorization/generated/pb/authorization/v1"
+	"github.com/not-for-prod/authorization/internal/testutil/authfixture"
 
 	"google.golang.org/protobuf/types/known/structpb"
 )

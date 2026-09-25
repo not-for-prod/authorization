@@ -3,7 +3,7 @@ package inmem
 import (
 	"context"
 
-	"authorization/domain/entity"
+	"github.com/not-for-prod/authorization/domain/entity"
 )
 
 // List returns independent snapshots in commit order, for development inspection.

@@ -5,8 +5,8 @@ import (
 
 	"github.com/not-for-prod/proterror/proterror"
 
-	"authorization/domain/entity"
-	"authorization/domain/gateway"
+	"github.com/not-for-prod/authorization/domain/entity"
+	"github.com/not-for-prod/authorization/domain/gateway"
 )
 
 // StartMethodRequest selects an eligible method and its decoded driver input.

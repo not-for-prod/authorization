@@ -5,9 +5,9 @@ import (
 	"net/http"
 	"testing"
 
-	"authorization/domain/entity"
-	"authorization/domain/repository"
-	"authorization/internal/testutil/authfixture"
+	"github.com/not-for-prod/authorization/domain/entity"
+	"github.com/not-for-prod/authorization/domain/repository"
+	"github.com/not-for-prod/authorization/internal/testutil/authfixture"
 
 	"github.com/not-for-prod/proterror/proterror"
 )

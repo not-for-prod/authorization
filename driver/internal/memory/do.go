@@ -4,7 +4,7 @@ import (
 	"context"
 	"maps"
 
-	"authorization/domain/entity"
+	"github.com/not-for-prod/authorization/domain/entity"
 )
 
 // Do commits the callback's writes together, or discards them on error, panic,

@@ -5,11 +5,11 @@ import (
 	"errors"
 	"testing"
 
-	authenticationservice "authorization/application/service/authentication-service"
-	"authorization/domain/application"
-	"authorization/domain/entity"
-	configured "authorization/driver/policy/configured"
-	"authorization/internal/testutil/authfixture"
+	authenticationservice "github.com/not-for-prod/authorization/application/service/authentication-service"
+	"github.com/not-for-prod/authorization/domain/application"
+	"github.com/not-for-prod/authorization/domain/entity"
+	configured "github.com/not-for-prod/authorization/driver/policy/configured"
+	"github.com/not-for-prod/authorization/internal/testutil/authfixture"
 )
 
 func TestGetAuthPolicyVisibilityAndSnapshots(t *testing.T) {

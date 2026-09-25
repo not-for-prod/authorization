@@ -3,7 +3,7 @@ package repository
 import (
 	"context"
 
-	"authorization/domain/entity"
+	"github.com/not-for-prod/authorization/domain/entity"
 )
 
 // Session stores logical sessions, scoped by Principal.TenantID and session ID.

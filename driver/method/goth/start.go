@@ -9,8 +9,8 @@ import (
 	"github.com/not-for-prod/observer/tracer/prospan"
 	"github.com/not-for-prod/proterror/proterror"
 
-	"authorization/domain/entity"
-	"authorization/domain/gateway"
+	"github.com/not-for-prod/authorization/domain/entity"
+	"github.com/not-for-prod/authorization/domain/gateway"
 )
 
 // StartInput starts an authorization-code flow. Redirect URLs and credentials

@@ -3,7 +3,7 @@ package inmem
 import (
 	"context"
 
-	"authorization"
+	"github.com/not-for-prod/authorization"
 )
 
 // Revoke is idempotent, including for session IDs unknown to this manager.

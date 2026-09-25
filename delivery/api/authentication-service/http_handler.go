@@ -4,7 +4,7 @@ import (
 	"context"
 	"net/http"
 
-	pb "authorization/generated/pb/authorization/v1"
+	pb "github.com/not-for-prod/authorization/generated/pb/authorization/v1"
 
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 	"google.golang.org/protobuf/encoding/protojson"

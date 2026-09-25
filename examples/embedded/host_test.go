@@ -9,10 +9,10 @@ import (
 	"testing"
 	"time"
 
-	auth "authorization"
-	sessioninmem "authorization/driver/session/inmem"
-	managerinmem "authorization/driver/transactionmanager/inmem"
-	userinmem "authorization/driver/user/inmem"
+	auth "github.com/not-for-prod/authorization"
+	sessioninmem "github.com/not-for-prod/authorization/driver/session/inmem"
+	managerinmem "github.com/not-for-prod/authorization/driver/transactionmanager/inmem"
+	userinmem "github.com/not-for-prod/authorization/driver/user/inmem"
 
 	"google.golang.org/protobuf/types/known/structpb"
 )

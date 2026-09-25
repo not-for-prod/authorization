@@ -6,17 +6,17 @@ import (
 	"sync"
 	"testing"
 
-	authenticationservice "authorization/application/service/authentication-service"
-	"authorization/domain/application"
-	"authorization/domain/entity"
-	"authorization/domain/gateway"
-	"authorization/domain/repository"
-	eventinmem "authorization/driver/event/inmem"
-	identityinmem "authorization/driver/identity/inmem"
-	transactioninmem "authorization/driver/transaction/inmem"
-	managerinmem "authorization/driver/transactionmanager/inmem"
-	userinmem "authorization/driver/user/inmem"
-	"authorization/internal/testutil/authfixture"
+	authenticationservice "github.com/not-for-prod/authorization/application/service/authentication-service"
+	"github.com/not-for-prod/authorization/domain/application"
+	"github.com/not-for-prod/authorization/domain/entity"
+	"github.com/not-for-prod/authorization/domain/gateway"
+	"github.com/not-for-prod/authorization/domain/repository"
+	eventinmem "github.com/not-for-prod/authorization/driver/event/inmem"
+	identityinmem "github.com/not-for-prod/authorization/driver/identity/inmem"
+	transactioninmem "github.com/not-for-prod/authorization/driver/transaction/inmem"
+	managerinmem "github.com/not-for-prod/authorization/driver/transactionmanager/inmem"
+	userinmem "github.com/not-for-prod/authorization/driver/user/inmem"
+	"github.com/not-for-prod/authorization/internal/testutil/authfixture"
 )
 
 // The fixture's password-labelled mock can return a verified identity. It is a

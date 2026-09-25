@@ -8,8 +8,8 @@ import (
 
 	"github.com/not-for-prod/proterror/proterror"
 
-	auth "authorization"
-	"authorization/internal/testutil/authfixture"
+	auth "github.com/not-for-prod/authorization"
+	"github.com/not-for-prod/authorization/internal/testutil/authfixture"
 )
 
 func dependencies(f *authfixture.Fixture) auth.Dependencies {

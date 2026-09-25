@@ -9,10 +9,10 @@ import (
 
 	"github.com/not-for-prod/proterror/proterror"
 
-	auth "authorization"
-	"authorization/domain/repository"
-	"authorization/driver/method/logpass"
-	repositorymock "authorization/generated/mocks/repository"
+	auth "github.com/not-for-prod/authorization"
+	"github.com/not-for-prod/authorization/domain/repository"
+	"github.com/not-for-prod/authorization/driver/method/logpass"
+	repositorymock "github.com/not-for-prod/authorization/generated/mocks/repository"
 )
 
 func TestVerify(t *testing.T) {

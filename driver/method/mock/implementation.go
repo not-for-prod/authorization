@@ -1,7 +1,7 @@
 package mock
 
 import (
-	"authorization"
+	"github.com/not-for-prod/authorization"
 )
 
 // Fixed test credentials, not real password hashing or TOTP verification.

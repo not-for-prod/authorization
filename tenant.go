@@ -6,7 +6,7 @@ import (
 
 	"github.com/not-for-prod/proterror/proterror"
 
-	authenticationservice "authorization/application/service/authentication-service"
+	authenticationservice "github.com/not-for-prod/authorization/application/service/authentication-service"
 )
 
 type tenantOptions struct {

@@ -4,7 +4,7 @@ import (
 	"context"
 	"net/http"
 
-	authenticationapi "authorization/delivery/api/authentication-service"
+	authenticationapi "github.com/not-for-prod/authorization/delivery/api/authentication-service"
 )
 
 // InputDecoder converts HTTP input to a driver's MethodInput. For callbacks the

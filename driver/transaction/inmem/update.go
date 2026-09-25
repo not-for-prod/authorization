@@ -4,8 +4,8 @@ import (
 	"context"
 	"reflect"
 
-	"authorization/domain/entity"
-	"authorization/driver/internal/memory"
+	"github.com/not-for-prod/authorization/domain/entity"
+	"github.com/not-for-prod/authorization/driver/internal/memory"
 )
 
 func (r *Repository) Update(ctx context.Context, row entity.Transaction) error {

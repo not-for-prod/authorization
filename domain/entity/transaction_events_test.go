@@ -7,8 +7,8 @@ import (
 	"testing"
 	"time"
 
-	"authorization/domain/entity"
-	"authorization/domain/service"
+	"github.com/not-for-prod/authorization/domain/entity"
+	"github.com/not-for-prod/authorization/domain/service"
 )
 
 type failedEvaluation struct{}

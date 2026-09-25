@@ -4,7 +4,7 @@ import (
 	"context"
 	"time"
 
-	"authorization/domain/entity"
+	"github.com/not-for-prod/authorization/domain/entity"
 )
 
 // SessionManager is a host-configured session implementation for one tenant.

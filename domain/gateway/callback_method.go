@@ -3,7 +3,7 @@ package gateway
 import (
 	"context"
 
-	"authorization/domain/entity"
+	"github.com/not-for-prod/authorization/domain/entity"
 )
 
 // CallbackMethod is an optional verification entry point for methods completed

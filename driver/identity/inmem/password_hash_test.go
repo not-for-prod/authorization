@@ -5,9 +5,9 @@ import (
 	"errors"
 	"testing"
 
-	"authorization"
-	identityinmem "authorization/driver/identity/inmem"
-	managerinmem "authorization/driver/transactionmanager/inmem"
+	"github.com/not-for-prod/authorization"
+	identityinmem "github.com/not-for-prod/authorization/driver/identity/inmem"
+	managerinmem "github.com/not-for-prod/authorization/driver/transactionmanager/inmem"
 )
 
 func TestPasswordHashPersistence(t *testing.T) {

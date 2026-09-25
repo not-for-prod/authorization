@@ -5,7 +5,7 @@ import (
 	"context"
 	"errors"
 
-	"authorization/domain/entity"
+	"github.com/not-for-prod/authorization/domain/entity"
 )
 
 // Method verifies one authentication mechanism using dependencies configured by

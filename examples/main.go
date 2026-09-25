@@ -13,9 +13,9 @@ import (
 	"sync"
 	"time"
 
-	"authorization/domain/entity"
-	eventinmem "authorization/driver/event/inmem"
-	"authorization/driver/method/logpass"
+	"github.com/not-for-prod/authorization/domain/entity"
+	eventinmem "github.com/not-for-prod/authorization/driver/event/inmem"
+	"github.com/not-for-prod/authorization/driver/method/logpass"
 
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 	clayserver "github.com/not-for-prod/clay/server"
@@ -27,15 +27,15 @@ import (
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/encoding/protojson"
 
-	authenticationapi "authorization/delivery/api/authentication-service"
-	pb "authorization/generated/pb/authorization/v1"
+	authenticationapi "github.com/not-for-prod/authorization/delivery/api/authentication-service"
+	pb "github.com/not-for-prod/authorization/generated/pb/authorization/v1"
 
-	"authorization"
-	identityinmem "authorization/driver/identity/inmem"
-	sessioninmem "authorization/driver/session/inmem"
-	transactioninmem "authorization/driver/transaction/inmem"
-	managerinmem "authorization/driver/transactionmanager/inmem"
-	userinmem "authorization/driver/user/inmem"
+	"github.com/not-for-prod/authorization"
+	identityinmem "github.com/not-for-prod/authorization/driver/identity/inmem"
+	sessioninmem "github.com/not-for-prod/authorization/driver/session/inmem"
+	transactioninmem "github.com/not-for-prod/authorization/driver/transaction/inmem"
+	managerinmem "github.com/not-for-prod/authorization/driver/transactionmanager/inmem"
+	userinmem "github.com/not-for-prod/authorization/driver/user/inmem"
 )
 
 type callerContextKey struct{}

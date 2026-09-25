@@ -8,14 +8,14 @@ import (
 	"testing"
 	"time"
 
-	auth "authorization"
-	eventinmem "authorization/driver/event/inmem"
-	identityinmem "authorization/driver/identity/inmem"
-	"authorization/driver/method/logpass"
-	sessioninmem "authorization/driver/session/inmem"
-	transactioninmem "authorization/driver/transaction/inmem"
-	managerinmem "authorization/driver/transactionmanager/inmem"
-	userinmem "authorization/driver/user/inmem"
+	auth "github.com/not-for-prod/authorization"
+	eventinmem "github.com/not-for-prod/authorization/driver/event/inmem"
+	identityinmem "github.com/not-for-prod/authorization/driver/identity/inmem"
+	"github.com/not-for-prod/authorization/driver/method/logpass"
+	sessioninmem "github.com/not-for-prod/authorization/driver/session/inmem"
+	transactioninmem "github.com/not-for-prod/authorization/driver/transaction/inmem"
+	managerinmem "github.com/not-for-prod/authorization/driver/transactionmanager/inmem"
+	userinmem "github.com/not-for-prod/authorization/driver/user/inmem"
 )
 
 func TestEngineSignIn(t *testing.T) {

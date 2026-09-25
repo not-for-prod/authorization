@@ -3,8 +3,8 @@ package inmem
 import (
 	"context"
 
-	"authorization/domain/entity"
-	"authorization/driver/internal/memory"
+	"github.com/not-for-prod/authorization/domain/entity"
+	"github.com/not-for-prod/authorization/driver/internal/memory"
 )
 
 func (r *Repository) Create(ctx context.Context, row entity.Identity) error {

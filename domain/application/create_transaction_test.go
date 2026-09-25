@@ -3,8 +3,8 @@ package application_test
 import (
 	"testing"
 
-	"authorization/domain/application"
-	"authorization/domain/entity"
+	"github.com/not-for-prod/authorization/domain/application"
+	"github.com/not-for-prod/authorization/domain/entity"
 )
 
 func TestCreateTransactionIntentValidation(t *testing.T) {

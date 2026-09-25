@@ -1,7 +1,7 @@
 // Package inmem coordinates process-local storage transactions for development and tests.
 package inmem
 
-import "authorization/driver/internal/memory"
+import "github.com/not-for-prod/authorization/driver/internal/memory"
 
 // Manager coordinates repositories constructed with the same manager. Transactions
 // serialize across its storage; errors, cancellation and panics discard writes.

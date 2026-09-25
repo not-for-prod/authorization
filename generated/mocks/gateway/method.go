@@ -4,8 +4,8 @@
 package gatewaymock
 
 import (
-	"authorization/domain/entity"
-	"authorization/domain/gateway"
+	"github.com/not-for-prod/authorization/domain/entity"
+	"github.com/not-for-prod/authorization/domain/gateway"
 	"context"
 	"sync"
 )

@@ -3,9 +3,9 @@ package inmem
 import (
 	"context"
 
-	"authorization/domain/entity"
-	"authorization/domain/repository"
-	"authorization/driver/internal/memory"
+	"github.com/not-for-prod/authorization/domain/entity"
+	"github.com/not-for-prod/authorization/domain/repository"
+	"github.com/not-for-prod/authorization/driver/internal/memory"
 )
 
 func (r *Repository) GetBySubject(ctx context.Context, Issuer, Subject string, opts ...repository.SelectOption) (*entity.Identity, error) {

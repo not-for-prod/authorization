@@ -9,7 +9,7 @@ import (
 
 	"github.com/not-for-prod/proterror/proterror"
 
-	"authorization"
+	"github.com/not-for-prod/authorization"
 )
 
 // SessionManager is scoped to one tenant. Construct a separate manager per tenant.

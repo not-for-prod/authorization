@@ -6,11 +6,11 @@ import (
 	"testing"
 	"time"
 
-	authenticationservice "authorization/application/service/authentication-service"
-	"authorization/domain/application"
-	"authorization/domain/entity"
-	"authorization/domain/gateway"
-	"authorization/internal/testutil/authfixture"
+	authenticationservice "github.com/not-for-prod/authorization/application/service/authentication-service"
+	"github.com/not-for-prod/authorization/domain/application"
+	"github.com/not-for-prod/authorization/domain/entity"
+	"github.com/not-for-prod/authorization/domain/gateway"
+	"github.com/not-for-prod/authorization/internal/testutil/authfixture"
 
 	"github.com/not-for-prod/proterror/proterror"
 )

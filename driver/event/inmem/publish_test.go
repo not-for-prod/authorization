@@ -7,11 +7,11 @@ import (
 	"testing"
 	"time"
 
-	"authorization/domain/entity"
-	"authorization/domain/repository"
-	eventinmem "authorization/driver/event/inmem"
-	transactioninmem "authorization/driver/transaction/inmem"
-	managerinmem "authorization/driver/transactionmanager/inmem"
+	"github.com/not-for-prod/authorization/domain/entity"
+	"github.com/not-for-prod/authorization/domain/repository"
+	eventinmem "github.com/not-for-prod/authorization/driver/event/inmem"
+	transactioninmem "github.com/not-for-prod/authorization/driver/transaction/inmem"
+	managerinmem "github.com/not-for-prod/authorization/driver/transactionmanager/inmem"
 )
 
 func TestAtomicOutbox(t *testing.T) {

@@ -3,7 +3,7 @@ package application
 import (
 	"github.com/not-for-prod/proterror/proterror"
 
-	"authorization/domain/entity"
+	"github.com/not-for-prod/authorization/domain/entity"
 )
 
 // GetAuthPolicyRequest selects the tenant whose public configuration is requested.

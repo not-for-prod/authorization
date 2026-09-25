@@ -8,9 +8,9 @@ import (
 	"github.com/not-for-prod/observer/tracer/prospan"
 	"github.com/not-for-prod/proterror/proterror"
 
-	"authorization/domain/application"
-	"authorization/domain/entity"
-	"authorization/domain/service"
+	"github.com/not-for-prod/authorization/domain/application"
+	"github.com/not-for-prod/authorization/domain/entity"
+	"github.com/not-for-prod/authorization/domain/service"
 )
 
 func (i *Implementation) CreateTransaction(ctx context.Context, req application.CreateTransactionRequest) (*application.CreateTransactionResponse, error) {

@@ -3,7 +3,7 @@ package mock
 import (
 	"context"
 
-	"authorization"
+	"github.com/not-for-prod/authorization"
 )
 
 func (m *Method) Available(_ context.Context, tx authorization.Transaction, _ authorization.MethodSelection) (bool, error) {
