@@ -25,11 +25,12 @@ sequenceDiagram
     App->>Tx: Lock transaction and recheck proof and policy
     App->>Store: Check identity ownership and create user and identity
     App->>Tx: Bind user and prepare completion
-    App->>Store: Save transaction and events, commit
     opt Session issuance configured
         App->>Session: Issue using stable transaction key
         Session-->>App: Session
     end
+    App->>Tx: Complete intent and produce AuthenticationCompleted
+    App->>Store: Save transaction and completion event, commit
     App-->>Client: Completed result
 ```
 
@@ -63,11 +64,11 @@ sequenceDiagram
 | Identity | Give one verified issuer/subject exactly one owner. | Create with a global unique issuer/subject constraint. Conflicts reject rather than sign in. |
 | Session | Represent the issued login credential. | Existing idempotent host session manager, outside storage locks. |
 
-Commands and facts: Start → MethodStarted, AcceptMethodProof → EvidenceAccepted,
-BindRegisteredUser → UserRegistered and PolicySatisfied, Complete → AuthenticationCompleted.
-These are transaction-owned event snapshots. UserRegistered records the committed
-creation/binding fact, without publishing the private identity. Events are records
-of synchronous completion, not a new asynchronous consumer route.
+Event contract corrected by the owner: Start, AcceptMethodProof, and
+BindRegisteredUser emit no events. Complete emits one `AuthenticationCompleted`
+with `After.Intent = sign_up` and the created user ID. It records successful
+completion without publishing the private identity. There is no separate
+`UserRegistered` event or asynchronous consumer route.
 
 ## Explicit implementation choices for correction
 

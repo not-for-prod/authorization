@@ -36,6 +36,23 @@ func (i *Implementation) VerifyMethod(
 	if caller.Key == "" {
 		return nil, span.Err(&proterror.PermissionDenied{})
 	}
+	operation := completionOperation{
+		tenant:    req.TenantID,
+		id:        req.TransactionID,
+		owner:     caller.Key,
+		attempt:   req.AttemptID,
+		challenge: req.GetChallengeID(),
+		kind:      entity.OperationVerify,
+	}
+	if i.completions != nil {
+		recovered, handled, recoverErr := i.recoverCompletion(ctx, operation)
+		if recoverErr != nil {
+			return nil, span.Err(recoverErr)
+		}
+		if handled {
+			return recovered, nil
+		}
+	}
 	claimID := rand.Text()
 	var snapshot entity.Transaction
 	var input gateway.MethodInput
@@ -68,10 +85,13 @@ func (i *Implementation) VerifyMethod(
 				if err := i.transactions.Update(ctx, *transaction); err != nil {
 					return err
 				}
-				return i.events.Publish(ctx, transaction.Events())
+				if events := transaction.Events(); i.completions == nil || len(events) > 0 {
+					return i.events.Publish(ctx, events)
+				}
+				return nil
 			}
 			if transaction.Intent != entity.IntentSignIn &&
-				transaction.Intent != entity.IntentSignUp {
+				transaction.Intent != entity.IntentSignUp && transaction.Intent != entity.IntentDelete {
 				return &proterror.Unimplemented{}
 			}
 
@@ -120,7 +140,10 @@ func (i *Implementation) VerifyMethod(
 			if err := i.transactions.Update(ctx, *transaction); err != nil {
 				return err
 			}
-			return i.events.Publish(ctx, transaction.Events())
+			if events := transaction.Events(); i.completions == nil || len(events) > 0 {
+				return i.events.Publish(ctx, events)
+			}
+			return nil
 		})
 	if err != nil {
 		return nil, span.Err(err)
@@ -151,7 +174,10 @@ func (i *Implementation) VerifyMethod(
 				if saveErr := i.transactions.Update(ctx, *transaction); saveErr != nil {
 					return saveErr
 				}
-				return i.events.Publish(ctx, transaction.Events())
+				if events := transaction.Events(); i.completions == nil || len(events) > 0 {
+					return i.events.Publish(ctx, events)
+				}
+				return nil
 			})
 			if rejectionErr != nil {
 				return nil, span.Err(rejectionErr)
@@ -200,7 +226,12 @@ func (i *Implementation) VerifyMethod(
 			return err
 		}
 
-		if decision.Satisfied {
+		if decision.Satisfied && i.completions != nil {
+			if err := transaction.FreezeCompletion(decision, i.now()); err != nil {
+				return errors.Join(&proterror.FailedPrecondition{}, err)
+			}
+		}
+		if decision.Satisfied && i.completions == nil {
 			response.Result = &application.AuthenticationResult{}
 			if err := i.finalizeIntent(ctx, finalizeIntentRequest{
 				Transaction: transaction,
@@ -215,8 +246,10 @@ func (i *Implementation) VerifyMethod(
 			return err
 		}
 
-		if err := i.events.Publish(ctx, transaction.Events()); err != nil {
-			return err
+		if events := transaction.Events(); i.completions == nil || len(events) > 0 {
+			if err := i.events.Publish(ctx, events); err != nil {
+				return err
+			}
 		}
 
 		response.Transaction = application.TransactionProgress{
@@ -255,6 +288,13 @@ func (i *Implementation) VerifyMethod(
 		return nil, span.Err(err)
 	}
 
+	if i.completions != nil && response.Transaction.PolicySatisfied {
+		recovered, _, recoverErr := i.recoverCompletion(ctx, operation)
+		if recoverErr != nil {
+			return nil, span.Err(recoverErr)
+		}
+		return recovered, nil
+	}
 	return &response, nil
 }
 
@@ -296,7 +336,14 @@ func (i *Implementation) finalizeIntent(ctx context.Context, req finalizeIntentR
 
 		if err := i.identities.Create(
 			ctx,
-			entity.Identity{ID: entity.IdentityID(rand.Text()), UserID: user.ID, Kind: identity.Kind, Issuer: identity.Issuer, Subject: identity.Subject, CreatedAt: user.CreatedAt},
+			entity.Identity{
+				ID:        entity.IdentityID(rand.Text()),
+				UserID:    user.ID,
+				Kind:      identity.Kind,
+				Issuer:    identity.Issuer,
+				Subject:   identity.Subject,
+				CreatedAt: user.CreatedAt,
+			},
 		); err != nil {
 			return err
 		}
@@ -305,9 +352,33 @@ func (i *Implementation) finalizeIntent(ctx context.Context, req finalizeIntentR
 			return err
 		}
 
+	case entity.IntentDelete:
+		if req.Transaction.UserID == nil || req.Transaction.Settings.IssueSession {
+			return &proterror.FailedPrecondition{}
+		}
+		user, err := i.users.Get(ctx, *req.Transaction.UserID, repository.ForUpdate())
+		if err != nil {
+			return err
+		}
+		if user == nil || user.ID != *req.Transaction.UserID {
+			return entity.ErrInvalidProof
+		}
+		if err := i.eligible(ctx, req.Transaction.TenantID, *user); err != nil {
+			return err
+		}
+		if err := req.Transaction.PrepareCompletion(req.Decision, i.now()); err != nil {
+			return err
+		}
+		if err := user.Delete(); err != nil {
+			return err
+		}
+		if err := i.users.Update(ctx, *user); err != nil {
+			return err
+		}
+
 	case entity.IntentSignIn:
 		if req.Transaction.UserID == nil {
-			return errors.Join(&proterror.NotFound{}, repository.ErrNotFound)
+			return errors.Join(&proterror.NotFound{}, repository.ErrNotFound, application.ErrAccountNotFound)
 		}
 		user, err := i.users.Get(ctx, *req.Transaction.UserID)
 		if err != nil {
@@ -328,7 +399,7 @@ func (i *Implementation) finalizeIntent(ctx context.Context, req finalizeIntentR
 	principal.Evidence = slices.Clone(principal.Evidence)
 	req.Result.Principal = principal
 
-	if req.Transaction.Settings.IssueSession {
+	if req.Transaction.Settings.IssueSession && i.completions == nil {
 		session, err := i.tenants[req.Transaction.TenantID].sessions.Create(
 			ctx,
 			gateway.CreateSessionRequest{

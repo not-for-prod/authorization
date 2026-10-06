@@ -25,6 +25,13 @@ func TestAtomicOutbox(t *testing.T) {
 		t.Fatal(err)
 	}
 
+	// Restore a finalizing root to exercise publication of a real completion event.
+	tx.Status = entity.TransactionFinalizing
+	tx.Principal = &entity.Principal{TenantID: tx.TenantID, UserID: "alice"}
+	if err := tx.Complete(time.Now()); err != nil {
+		t.Fatal(err)
+	}
+
 	failure := errors.New("rollback")
 	if err := manager.Do(ctx, func(ctx context.Context) error {
 		if err := rows.Create(ctx, *tx); err != nil {

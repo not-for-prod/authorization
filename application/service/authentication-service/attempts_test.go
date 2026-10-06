@@ -68,22 +68,16 @@ func TestPendingAttemptGuardsAndReplay(t *testing.T) {
 	if !reflect.DeepEqual(before, f.Store.Events()) || f.SessionCount() != 1 {
 		t.Fatal("completion retry emitted event or duplicated session")
 	}
-	want := []string{"TransactionCreated", "MethodStartRequested", "MethodStarted", "MethodVerificationRequested", "EvidenceAccepted", "MethodStartRequested", "MethodStarted", "MethodVerificationRequested", "EvidenceAccepted", "PolicySatisfied", "AuthenticationCompleted"}
 	events := f.Store.Events()
-	if len(events) != len(want) {
+	if len(events) != 1 {
 		t.Fatalf("events: %+v", events)
 	}
-	for j, event := range events {
-		if event.Type != want[j] || event.AggregateVersion != uint64(j+1) || event.After.Version != event.AggregateVersion {
-			t.Fatalf("event %d: %+v", j, event)
-		}
-		if j == 0 {
-			if event.Before != nil {
-				t.Fatal("creation before snapshot")
-			}
-		} else if !reflect.DeepEqual(*event.Before, events[j-1].After) {
-			t.Fatalf("discontinuous snapshot at %d", j)
-		}
+	event := events[0]
+	if event.Type != "AuthenticationCompleted" || event.After.Intent != entity.IntentSignIn ||
+		event.Before == nil || event.Before.Status != entity.TransactionFinalizing ||
+		event.After.Status != entity.TransactionCompleted || event.After.UserID != "alice" ||
+		event.AggregateVersion != event.Before.Version+1 || event.After.Version != event.AggregateVersion {
+		t.Fatalf("completion event: %+v", event)
 	}
 }
 
@@ -133,7 +127,7 @@ func TestPublicationFailureRollsBackEvidence(t *testing.T) {
 		t.Fatal("evidence committed without event")
 	}
 	events := f.Store.Events()
-	if events[len(events)-1].Type != "MethodVerificationRequested" {
+	if len(events) != 0 {
 		t.Fatal("rolled back event published")
 	}
 }

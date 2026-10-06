@@ -30,6 +30,7 @@ type TransactionKey struct {
 type Access struct {
 	DB           trmpgx.Tr
 	Transactions map[TransactionKey]entity.Transaction
+	Completions  map[TransactionKey]bool
 	Users        map[entity.UserID]entity.User
 	Identities   map[entity.IdentityID]bool
 }

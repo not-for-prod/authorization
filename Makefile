@@ -154,4 +154,4 @@ skills-validate:
 
 .PHONY: drivers-test
 drivers-test:
-	AUTHORIZATION_TEST_DATABASE_URL='$(DB_URL)' AUTHORIZATION_TEST_REDIS_ADDR='127.0.0.1:$(or $(REDIS_PORT),56389)' go test -race ./driver/transactionmanager/pgx ./driver/session/redis ./internal/pkg/convert ./tools/migrations
+	AUTHORIZATION_TEST_DATABASE_URL='$(DB_URL)' AUTHORIZATION_TEST_REDIS_ADDR='127.0.0.1:$(or $(REDIS_PORT),56389)' go test -race ./driver/transactionmanager/pgx ./driver/transactionmanager/redis ./driver/session/redis ./internal/pkg/convert ./tools/migrations

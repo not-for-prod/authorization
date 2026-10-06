@@ -1,5 +1,21 @@
 # Authentication domain events
 
+Events are published only when an intent flow successfully completes: sign-up,
+sign-in, identity changes, or account deletion. Intermediate state changes,
+including transaction creation, method attempts, accepted evidence, policy
+satisfaction, rejection and abandonment, do not publish events.
+
+Currently sign-up and sign-in emit one `AuthenticationCompleted` event per
+transaction. `After.Intent` identifies the completed intent and `After.UserID`
+identifies the user. Identity-update and account-deletion flows are not implemented;
+their events belong at successful business completion, not proof acceptance.
+`UserRegistered` is no longer emitted separately during sign-up. Consumers of
+intermediate events must move to the completion event; this is a deliberate
+reduction of the published contract.
+
+Aggregate versions still advance for internal transitions, so published event
+versions need not be consecutive. No-op completion retries emit nothing.
+
 Authentication transactions emit `entity.TransactionEvent` envelopes containing
 stable IDs, ordered aggregate versions, occurrence/correlation/causation metadata,
 and independent before/after snapshots. Snapshots exclude caller keys, method

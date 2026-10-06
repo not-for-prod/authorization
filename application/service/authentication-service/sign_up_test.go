@@ -106,6 +106,10 @@ func TestSignUpCollectsProofBeforeCreationAndReplaysCompletion(t *testing.T) {
 	if len(data.Users) != 1 || len(data.Identities) != 1 {
 		t.Fatal("duplicate accounts")
 	}
+	if len(data.Events) != 1 || data.Events[0].Type != "AuthenticationCompleted" ||
+		data.Events[0].After.Intent != entity.IntentSignUp || data.Events[0].After.UserID != user.ID {
+		t.Fatalf("incorrect sign-up completion events: %+v", data.Events)
+	}
 }
 
 func TestSignUpConcurrentIdentityClaim(t *testing.T) {
@@ -157,7 +161,7 @@ type rejectRegistrationEvent struct{ repository.EventPublisher }
 
 func (p rejectRegistrationEvent) Publish(ctx context.Context, events []entity.TransactionEvent) error {
 	for _, event := range events {
-		if event.Type == "UserRegistered" {
+		if event.Type == "AuthenticationCompleted" {
 			return errors.New("injected registration write failure")
 		}
 	}
@@ -198,8 +202,11 @@ func TestSignUpRollbackAndRejectedProof(t *testing.T) {
 				t.Fatal(err)
 			}
 			defer release()
-			if len(data.Users) != 0 || len(data.Identities) != 0 || f.SessionCount() != 0 {
+			if len(data.Users) != 0 || len(data.Identities) != 0 || len(data.Events) != 0 {
 				t.Fatal("failed registration leaked account state")
+			}
+			if scenario != "publication failure" && f.SessionCount() != 0 {
+				t.Fatal("rejected registration issued a session")
 			}
 		})
 	}

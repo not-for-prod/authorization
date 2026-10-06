@@ -6,6 +6,10 @@ Configure your bot in BotFather's Login Widget settings: register the exact HTTP
 callback URL and obtain the client ID and secret. Keep the default RS256 signing
 algorithm. This driver requests only `openid` and validates RS256 tokens.
 
+For local development, the driver also accepts HTTP callbacks on `localhost`
+and `127.0.0.1`. Telegram must accept the exact callback URL registered in
+BotFather; accepting configuration locally does not guarantee provider approval.
+
 ```go
 method, err := telegram.New(telegram.Config{
     ClientID:     cfg.TelegramClientID,

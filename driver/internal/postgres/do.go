@@ -28,6 +28,7 @@ func (s *Store) Do(ctx context.Context, operation func(context.Context) error) e
 		tx := &scope{owner: s, active: true, access: Access{
 			DB:           trmpgx.DefaultCtxGetter.DefaultTrOrDB(ctx, nil),
 			Transactions: make(map[TransactionKey]entity.Transaction),
+			Completions:  make(map[TransactionKey]bool),
 			Users:        make(map[entity.UserID]entity.User),
 			Identities:   make(map[entity.IdentityID]bool),
 		}}

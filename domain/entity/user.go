@@ -1,23 +1,39 @@
 package entity
 
-import "time"
+import (
+	"time"
+
+	"github.com/not-for-prod/proterror/proterror"
+)
 
 // UserID identifies the canonical internal subject, independently of the
 // external or local identity used to authenticate.
 type UserID string
 
 // UserStatus describes a user's lifecycle state.
-// Sign-up assigns active; additional lifecycle transitions remain to be defined.
+// Sign-up assigns active; account deletion assigns deleted.
 type UserStatus string
 
 // UserStatusActive is the initial status assigned by the sign-up flow.
 const UserStatusActive UserStatus = "active"
+
+// UserStatusDeleted prevents further application access while retaining identity ownership.
+const UserStatusDeleted UserStatus = "deleted"
 
 // User is the canonical internal subject to which authentication identities resolve.
 type User struct {
 	ID        UserID
 	Status    UserStatus
 	CreatedAt time.Time
+}
+
+// Delete permanently disables this authentication subject without removing its identities.
+func (u *User) Delete() error {
+	if u.Status != UserStatusActive {
+		return &proterror.FailedPrecondition{}
+	}
+	u.Status = UserStatusDeleted
+	return nil
 }
 
 // IdentityID identifies a link between an external or local identifier and a user.

@@ -15,6 +15,13 @@ func TestConfigurationAndAvailability(t *testing.T) {
 		ClientSecret: "secret",
 		RedirectURL:  "https://host.example/callback",
 	}
+	for _, redirect := range []string{"http://localhost:3001/callback", "http://127.0.0.1:3001/callback"} {
+		local := valid
+		local.RedirectURL = redirect
+		if _, err := New(local); err != nil {
+			t.Fatal(err)
+		}
+	}
 	for _, change := range []func(*Config){
 		func(c *Config) { c.ClientID = "" }, func(c *Config) { c.ClientID = "a:b" },
 		func(c *Config) { c.ClientSecret = "" }, func(c *Config) { c.RedirectURL = "http://host.example/callback" },

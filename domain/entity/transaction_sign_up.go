@@ -9,10 +9,9 @@ func (t *Transaction) BindRegisteredUser(userID UserID, decision Decision, now t
 		return ErrInvalidTransition
 	}
 	next := t.Copy()
-	before := next.eventSnapshot()
 	next.UserID = &userID
 	next.VerifiedIdentity = nil
-	next.recordEvent("UserRegistered", &before, now)
+	next.Version++
 	if err := next.PrepareCompletion(decision, now); err != nil {
 		return err
 	}

@@ -9,7 +9,7 @@ import (
 // Transaction stores authentication transactions, including accumulated evidence.
 // Get must match tenant, ID, and ownerKey; a mismatch returns ErrNotFound.
 // An empty ownerKey is an exact filter, never a wildcard.
-// Update requires a locked Get in the same
+// Update requires a locked or version-checked Get in the same
 // storage transaction and must preserve ID, TenantID, Intent, and CreatedAt.
 // It atomically persists all root-owned challenges, claims, evidence, settings,
 // policy snapshot, pending attempt, receipts, version, caller association, and completion state.
@@ -32,7 +32,9 @@ type Transaction interface {
 
 // TransactionManager scopes an adapter's database/storage transaction. This is
 // distinct from entity.Transaction, which is an authentication transaction.
-// Do commits only on nil error and rolls back otherwise. Callers must use the
+// Do commits only on nil error and rolls back otherwise. Optimistic adapters may
+// return a conflict instead of holding a lock; they must never replay callbacks.
+// Callers must use the
 // supplied context for participating repository operations; locks survive until
 // completion. Implementations must reject nesting unless they can preserve the
 // outer transaction's atomicity. This does not provide a distributed transaction

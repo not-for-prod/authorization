@@ -14,7 +14,7 @@ This is event-driven state persistence, not event sourcing. Aggregate snapshots 
 1. Assign every persistent business object to an explicit aggregate root and consistency boundary.
 2. Treat any identity-bearing record with business lifecycle or transition rules as domain state, even when named webhook, notification, inbox item, job, or evidence. Keep purely technical deduplication and transport records in infrastructure.
 3. Change aggregate state only through root constructors and intention-revealing methods that enforce invariants.
-4. Make every successful persistent transition emit one or more typed state-change events. Event production follows the transition, not the existence of current consumers.
+4. Emit events only for the business outcomes in the owner-approved event contract. Authentication publishes only successful intent completion: sign-up, sign-in, identity changes, and account deletion. Persist intermediate attempts, claims, evidence, policy decisions, rejection, and abandonment without events; a stored transition alone does not justify publication.
 5. Create lifecycle events inside the aggregate transition. Application services, repositories, delivery handlers, and consumers must not invent them.
 6. Persist one aggregate root and append its events to a durable transactional outbox in the same transaction. Use Vibox when the project provides it; otherwise use an equivalent mechanism with the same atomicity.
 7. Let one application command and transaction mutate at most one aggregate root, including its owned children and rows. Inbox deduplication and outbox records are technical participants, not additional roots.
@@ -65,7 +65,7 @@ Implement a transition in this order:
 3. Apply the state change.
 4. Increment aggregate version.
 5. Capture an immutable `after` snapshot.
-6. Create and return or record the event.
+6. For a contracted business outcome, create and return or record the event. Intermediate transitions advance state/version without constructing event snapshots.
 
 Keep creation separate from rehydration. Rehydration restores persisted state and emits nothing. Prevent callers from directly assigning lifecycle fields.
 
@@ -84,7 +84,7 @@ append every returned event to the transactional outbox
 commit
 ```
 
-Rollback state and events together. Never commit a transition without its event or publish an event for state that did not commit.
+Rollback state and events together. Never commit a contracted eventful outcome without its event or publish an event for state that did not commit.
 
 Use one repository per aggregate root for writes. Hide owned child tables behind that repository. Prefer version-aware `Load`/`Save(expectedVersion)` semantics where supported. Keep read models and projection repositories separate from aggregate persistence.
 
@@ -137,7 +137,7 @@ Do not infer aggregate boundaries from tables, provider DTOs, protobuf messages,
 Before schema or production implementation, create or update an approved `domain-model.md` using [the model template](references/domain-model-template.md). Define:
 
 - aggregate roots, identities, owned and excluded state, and invariants;
-- commands, transitions, and the event emitted by every persistent change;
+- commands, transitions, and which business outcomes emit events; explicitly identify internal transitions without events;
 - event-safe before/after schemas;
 - topics or streams, partition keys, ordering, consumers, and resulting commands;
 - transaction boundaries, versions, idempotency, correlation, causation, retry, replay, and failure handling;
@@ -172,7 +172,7 @@ The webhook boundary may authenticate and normalize input. It must not synchrono
 
 ### 3. Obtain approval
 
-For a non-trivial feature, present the aggregate map, transition matrix, event contracts, event routes, and transaction boundaries for explicit owner approval before editing schemas or production code. Treat an unowned mutation, missing event, ambiguous consistency boundary, or multi-root transaction as a blocker.
+For a non-trivial feature, present the aggregate map, transition matrix, event contracts, event routes, and transaction boundaries for explicit owner approval before editing schemas or production code. Treat an unowned mutation, missing contracted event, ambiguous consistency boundary, or multi-root transaction as a blocker.
 
 For a narrow fix that does not change the approved topology, verify conformance and avoid expanding scope unnecessarily.
 
@@ -195,7 +195,7 @@ Do not let migration or generated transport shapes dictate aggregate boundaries.
 
 Test at least:
 
-- every successful transition and its exact immutable `before`/`after` event;
+- every contracted outcome and its exact immutable `before`/`after` event; intermediate transitions emit nothing;
 - creation/deletion null-snapshot semantics;
 - failed and no-op transitions emit nothing and do not mutate;
 - later aggregate mutation cannot alter prior event snapshots;
@@ -230,7 +230,7 @@ When reviewing, report the violated rule, concrete evidence, failure mode, and s
 
 ## Exceptions and Governance
 
-Allow a multi-root transaction or missing state-change event only through an explicit architecture decision that records:
+Allow a multi-root transaction or missing contracted business event only through an explicit architecture decision that records:
 
 - the exact rule and narrow operation being excepted;
 - the invariant that cannot tolerate eventual consistency;

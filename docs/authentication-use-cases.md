@@ -91,3 +91,29 @@ attest the same unresolved identity or the same resolved user.
 Finalization requires an existing eligible user for SIGN_IN. SIGN_UP rejects
 registered subjects and creates an eligible user and identity only after policy
 satisfaction, retaining the existing atomic creation boundary.
+
+### Sign-in without a registered account
+
+After valid proof satisfies policy, sign-in without a bound user returns
+`ErrAccountNotFound` (exported from the root package), retaining `ErrNotFound`
+and the `proterror.NotFound` classification. Hosts can distinguish this result
+with `errors.Is` and offer explicit signup. Other storage misses do not carry
+this sentinel. No account or session is created by failed sign-in.
+
+
+## DELETE intent
+
+DELETE requires a host-authenticated caller even when the intent configuration omits
+`WithAuthenticatedUserRequired`. Configure it with that option to hide the policy
+from anonymous callers. Session issuance for DELETE is rejected at construction.
+The ordinary proof acceptance path enforces the original UserID; an unregistered
+identity or another user's identity cannot authorize deletion.
+
+Finalization locks the User, calls `User.Delete` to set status `deleted`, and
+persists it through `UserRepository.Update`. User and identity records remain stored. The existing completion receipt and
+`AuthenticationCompleted` event commit with that deletion. A DELETE receipt can be
+recovered without reloading the now-deleted user and never issues a session. Host
+applications must reject sessions for missing or non-active users at their access boundary; the
+Redis session driver alone does not query user storage. Business data retention and
+foreign keys belong to the host. Atlas implements this integration in its approved
+`docs/event-storming/account-deletion.md` model.

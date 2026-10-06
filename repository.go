@@ -5,6 +5,9 @@ import "github.com/not-for-prod/authorization/domain/repository"
 // TransactionRepository exposes the repository contract for host implementations.
 type TransactionRepository = repository.Transaction
 
+// CompletionRepository stores immutable finalization receipts for cross-store recovery.
+type CompletionRepository = repository.Completion
+
 // UserRepository exposes the repository contract for host implementations.
 type UserRepository = repository.User
 
@@ -31,7 +34,8 @@ const (
 	SelectForUpdate = repository.SelectForUpdate
 )
 
-// ForUpdate requests a root lock held through TransactionManager.Do.
+// ForUpdate requests a root write guard through TransactionManager.Do.
+// Redis uses an atomic snapshot comparison; PostgreSQL holds a row lock.
 func ForUpdate() SelectOption { return SelectForUpdate }
 
 // EventPublisher records transitions atomically with authentication state.

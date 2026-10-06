@@ -13,7 +13,10 @@ import (
 	"github.com/not-for-prod/authorization/domain/service"
 )
 
-func (i *Implementation) CreateTransaction(ctx context.Context, req application.CreateTransactionRequest) (*application.CreateTransactionResponse, error) {
+func (i *Implementation) CreateTransaction(
+	ctx context.Context,
+	req application.CreateTransactionRequest,
+) (*application.CreateTransactionResponse, error) {
 	ctx, span := prospan.Start(ctx)
 	defer span.End()
 	if err := req.Verify(); err != nil {
@@ -36,7 +39,7 @@ func (i *Implementation) CreateTransaction(ctx context.Context, req application.
 	if req.AuthenticatedUserID != nil && (caller.UserID == nil || *caller.UserID != *req.AuthenticatedUserID) {
 		return nil, span.Err(&proterror.PermissionDenied{})
 	}
-	if rule.RequireAuthenticatedUser && caller.UserID == nil {
+	if (rule.RequireAuthenticatedUser || req.Intent == entity.IntentDelete) && caller.UserID == nil {
 		return nil, span.Err(&proterror.Unauthenticated{})
 	}
 	if req.Intent == entity.IntentSignUp && caller.UserID != nil {
@@ -63,7 +66,14 @@ func (i *Implementation) CreateTransaction(ctx context.Context, req application.
 	}
 	settings := i.limits
 	settings.IssueSession = rule.IssueSession
-	tx, err := entity.NewTransaction(entity.TransactionID(rand.Text()), caller.Key, *policy, caller.UserID, settings, i.now())
+	tx, err := entity.NewTransaction(
+		entity.TransactionID(rand.Text()),
+		caller.Key,
+		*policy,
+		caller.UserID,
+		settings,
+		i.now(),
+	)
 	if err != nil {
 		return nil, span.Err(errors.Join(&proterror.FailedPrecondition{}, err))
 	}
@@ -94,7 +104,12 @@ func (i *Implementation) CreateTransaction(ctx context.Context, req application.
 	progress := application.TransactionProgress{Status: tx.Status, ID: tx.ID, TenantID: tx.TenantID, Intent: tx.Intent,
 		CreatedAt: tx.CreatedAt, ExpiresAt: tx.ExpiresAt, PolicySatisfied: decision.Satisfied}
 	if tx.Pending != nil {
-		progress.PendingAttempt = &application.PendingMethod{AttemptID: tx.Pending.ID, Selection: tx.Pending.Selection, ChallengeID: tx.Pending.ChallengeID, Ready: tx.Pending.Ready}
+		progress.PendingAttempt = &application.PendingMethod{
+			AttemptID:   tx.Pending.ID,
+			Selection:   tx.Pending.Selection,
+			ChallengeID: tx.Pending.ChallengeID,
+			Ready:       tx.Pending.Ready,
+		}
 	} else if tx.Status == entity.TransactionActive && tx.Claim == nil && tx.Attempts < tx.Settings.MaxAttempts {
 		for _, selection := range decision.MethodSelections() {
 			driver := i.tenants[tx.TenantID].methods[selection.Method]
@@ -116,7 +131,10 @@ func (i *Implementation) CreateTransaction(ctx context.Context, req application.
 		if err := i.transactions.Create(ctx, *tx); err != nil {
 			return err
 		}
-		return i.events.Publish(ctx, tx.Events())
+		if events := tx.Events(); i.completions == nil || len(events) > 0 {
+			return i.events.Publish(ctx, events)
+		}
+		return nil
 	}); err != nil {
 		return nil, span.Err(err)
 	}

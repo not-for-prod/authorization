@@ -4,6 +4,9 @@ Choose implementations by the dependency they satisfy:
 
 | Component | Implementation | Constructor |
 | --- | --- | --- |
+| Expiring authentication transactions | `transaction/redis` | `New(manager)` |
+| Optimistic Redis scopes | `transactionmanager/redis` | `New(client)` |
+| Completion receipts | `completion/pgx` | `New(manager)` |
 | Authentication transactions | `transaction/pgx` | `New(manager)` |
 | Storage transactions | `transactionmanager/pgx` | `New(pool)` |
 | Users | `user/pgx` | `New(manager)` |

@@ -135,3 +135,39 @@ The xo templates generate database rows and table/column constants only. Driver
 methods own their parameterized SQL and scoped pgx calls. Regenerate with `make xo`
 after schema changes; do not edit `generated/xo` by hand. Use a dedicated generation
 database to avoid generating unrelated host tables.
+
+## Redis authentication progress with PostgreSQL completion
+
+Hosts can opt into `driver/transactionmanager/redis` and `driver/transaction/redis`
+for expiring progress. Set `Dependencies.Completions` to
+`driver/completion/pgx.New(pgManager)` and `Dependencies.CompletionManager` to the
+same PostgreSQL manager used by Users, Identities and Events. Both optional fields
+must be supplied together. Existing PostgreSQL-only configurations remain valid.
+Apply migration 00004 before using this mode. The library retains its optional
+PostgreSQL transaction table; hosts such as Atlas may remove that table after
+stopping old writers and verifying their new configuration.
+
+Redis scopes stage one bounded root and commit using an atomic comparison against
+the originally read snapshot. A conflict returns Aborted; callbacks are never
+automatically replayed. ForUpdate means a version-checked write in this adapter,
+not a Redis lock. Use context-aware client timeouts and durable, noeviction Redis.
+The absolute authentication deadline never extends on an update.
+
+Method starts commit their claim before provider I/O, so concurrent starts cannot
+dispatch twice. A failed or ambiguous start is not automatically replayed; begin a
+new flow when its outcome cannot be recovered.
+
+Final proof is frozen in Redis before PostgreSQL finalization. Completion receipt,
+new signup user/identity and AuthenticationCompleted commit together under a
+receipt-key lock. Session issuance happens afterward. Retry the original verify
+or callback operation to recover a committed result without replaying proof.
+Tenant, caller, attempt, challenge, operation kind and the original deadline are
+checked. Recovery rechecks current user eligibility. Progress queries can use the
+receipt after Redis progress disappears. Receipt retention must cover the original
+deadline; no cleanup worker is added here. Receipts exclude challenge secrets and
+tokens but contain private authentication metadata and need normal access controls.
+
+Only signup and sign-in are implemented in staged mode. Existing unsupported
+intents remain unsupported. The separate Redis short-lived-storage draft is not
+the implementation contract for this option: there is no Redis outbox bridge or
+background registration-recovery worker.

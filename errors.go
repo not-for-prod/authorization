@@ -1,6 +1,7 @@
 package authorization
 
 import (
+	"github.com/not-for-prod/authorization/domain/application"
 	"github.com/not-for-prod/authorization/domain/entity"
 	"github.com/not-for-prod/authorization/domain/gateway"
 	"github.com/not-for-prod/authorization/domain/repository"
@@ -20,6 +21,7 @@ var (
 	ErrInvalidProof         = entity.ErrInvalidProof
 	ErrProofRejected        = gateway.ErrProofRejected
 	ErrNotFound             = repository.ErrNotFound
+	ErrAccountNotFound      = application.ErrAccountNotFound
 	ErrAlreadyExists        = repository.ErrAlreadyExists
 	ErrInvalidPolicy        = service.ErrInvalidPolicy
 	ErrPolicyMismatch       = service.ErrPolicyMismatch

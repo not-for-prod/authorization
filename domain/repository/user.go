@@ -15,4 +15,6 @@ type User interface {
 	Create(ctx context.Context, user entity.User) error
 	Get(ctx context.Context, id entity.UserID, opts ...SelectOption) (*entity.User, error)
 	Update(ctx context.Context, user entity.User) error
+	// Delete removes the user and all owned identities after a locked Get.
+	Delete(ctx context.Context, id entity.UserID) error
 }

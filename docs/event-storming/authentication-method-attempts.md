@@ -37,23 +37,23 @@ sequenceDiagram
         Note over App,Outbox: Begin storage transaction and lock authentication transaction
         App->>Tx: BeginMethod
         Tx->>Tx: Require active, no pending attempt, selection allowed by policy
-        Tx-->>App: Pending attempt and dispatch claim, MethodStartRequested
-        App->>Outbox: Save root and append event, commit
+        Tx-->>App: Pending attempt and dispatch claim, no event
+        App->>Outbox: Save root, commit
     end
     App->>Driver: Start outside the storage lock
     Driver-->>App: Optional challenge and public redirect
     rect rgb(235, 245, 255)
         App->>Tx: Lock and RecordMethodStarted with matching claim
-        Tx-->>App: Awaiting verification, MethodStarted
-        App->>Outbox: Save root and append event, commit
+        Tx-->>App: Awaiting verification, no event
+        App->>Outbox: Save root, commit
     end
     App-->>Client: Pending attempt and optional challenge
     Client->>App: VerifyMethod for the pending selection
     rect rgb(235, 245, 255)
         App->>Tx: Lock and BeginVerification
         Tx->>Tx: Check pending selection, challenge, expiry and retry budget
-        Tx-->>App: Dispatch claim, MethodVerificationRequested
-        App->>Outbox: Save root and append event, commit
+        Tx-->>App: Dispatch claim, no event
+        App->>Outbox: Save root, commit
     end
     App->>Driver: Verify outside the storage lock
     Driver-->>App: Verified subject and evidence
@@ -62,8 +62,8 @@ sequenceDiagram
         App->>Tx: Lock and AcceptMethodProof
         Tx->>Tx: Check claim, bind subject, accept evidence, consume attempt
         Tx->>Tx: Evaluate its policy using the pure evaluator
-        Tx-->>App: EvidenceAccepted and, when satisfied, PolicySatisfied
-        App->>Outbox: Save root and append event, commit
+        Tx-->>App: Evidence accepted and policy evaluated, no event
+        App->>Outbox: Save root, commit
     end
     alt Policy satisfied
         opt Intent issues a session
@@ -73,7 +73,7 @@ sequenceDiagram
         rect rgb(235, 245, 255)
             App->>Tx: Lock and CompleteAuthentication
             Tx-->>App: AuthenticationCompleted
-            App->>Outbox: Save root and append event, commit
+            App->>Outbox: Save root and append completion event, commit
         end
         App-->>Client: Principal and optional session
     else More evidence needed
@@ -101,19 +101,19 @@ sequenceDiagram
         Tx-->>App: FailedPrecondition, no mutation or event
         App-->>Client: Rejected before calling driver
     else Matching attempt
-        App->>Outbox: Commit dispatch claim and event
+        App->>Outbox: Commit dispatch claim
         App->>Driver: Verify outside lock
         alt Definitively invalid proof
             App->>Tx: Lock and RejectMethodProof
-            Tx-->>App: Retain pending attempt within retry budget, MethodProofRejected
-            App->>Outbox: Save root and event atomically
+            Tx-->>App: Retain pending attempt within retry budget, no event
+            App->>Outbox: Save root atomically
             App-->>Client: Unauthenticated, bounded retry allowed
         else Result uncertain or process interrupted
             Note over Tx,Driver: Keep fenced claim, do not automatically repeat external effect
             Client->>App: Retry original operation
             App->>Tx: Inspect original claim and outcome
             Tx-->>App: Busy while claimed, abandon after expired uncertain claim
-            App->>Outbox: Save any abandonment transition and event atomically
+            App->>Outbox: Save any abandonment transition atomically
             App-->>Client: Original stored outcome, busy or abandoned
         end
     end
@@ -125,24 +125,27 @@ An attempt identifier returned by Start and required by Verify fences stale
 retries when the same selection is started again. Duplicate Start for the same
 still-pending selection returns its stored start outcome, without a second call.
 Missing users and identities remain NotFound. They do not implicitly register
-accounts. Terminal rejection retires the pending attempt and emits its transition.
+accounts. Terminal rejection retires the pending attempt without publishing an event.
 
 ## Commands and events
 
+Owner correction: only successful intent completion publishes an event.
+Intermediate persisted transitions remain internal state.
+
 | Command | Changed state | Aggregate-produced event |
 | --- | --- | --- |
-| CreateTransaction | New root | TransactionCreated |
-| BeginMethod | Pending attempt and start dispatch claim | MethodStartRequested |
-| RecordMethodStarted | Optional challenge, ready for verification | MethodStarted |
-| BeginVerification | Verification dispatch claim and attempt counter | MethodVerificationRequested |
-| RejectMethodProof | Release claim and record rejection, retain or retire attempt | MethodProofRejected |
-| AcceptMethodProof | Evidence, bound subject, consumed attempt, policy outcome | EvidenceAccepted and, when satisfied, PolicySatisfied |
-| AbandonAttempt | Abandoned root, cleared private challenge state | TransactionAbandoned |
+| CreateTransaction | New root | None |
+| BeginMethod | Pending attempt and start dispatch claim | None |
+| RecordMethodStarted | Optional challenge, ready for verification | None |
+| BeginVerification | Verification dispatch claim and attempt counter | None |
+| RejectMethodProof | Release claim and record rejection, retain or retire attempt | None |
+| AcceptMethodProof | Evidence, bound subject, consumed attempt, policy outcome | None |
+| AbandonAttempt | Abandoned root, cleared private challenge state | None |
 | CompleteAuthentication | Completed root and principal reference | AuthenticationCompleted |
 
 Events carry stable event ID, type, schema version, tenant and transaction ID,
 aggregate version, occurrence time, correlation and causation IDs, actor/source,
-and immutable before/after snapshots. Creation has a null before snapshot.
+and immutable before/after snapshots. Only successful intent completion emits an event; internal versions may be skipped.
 Snapshots include lifecycle, pending-attempt identity and selection, challenge
 reference and status, evidence metadata, subject binding, policy outcome and
 claim metadata. Omit passwords, proof inputs, tokens, caller secrets, private
@@ -154,8 +157,8 @@ The in-memory implementation only records events; it has no relay or consumer.
 
 1. **Completion response, confirmed by owner:** finalization remains synchronous.
    Start, Verify and Callback are user-action commands. Domain events describe
-   their committed state changes and do not schedule the next authentication
-   step or finalization. After PolicySatisfied is committed, the same application
+   only successful intent completion and do not schedule the next authentication
+   step or finalization. After policy satisfaction, the same application
    request invokes the idempotent session driver outside the lock, then commits
    CompleteAuthentication and AuthenticationCompleted. No finalization consumer
    or new completion endpoint is introduced. A failed or lost completion response

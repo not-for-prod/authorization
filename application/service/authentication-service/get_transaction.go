@@ -9,10 +9,14 @@ import (
 
 	"github.com/not-for-prod/authorization/domain/application"
 	"github.com/not-for-prod/authorization/domain/entity"
+	"github.com/not-for-prod/authorization/domain/repository"
 	"github.com/not-for-prod/authorization/domain/service"
 )
 
-func (i *Implementation) GetTransaction(ctx context.Context, req application.GetTransactionRequest) (*application.GetTransactionResponse, error) {
+func (i *Implementation) GetTransaction(
+	ctx context.Context,
+	req application.GetTransactionRequest,
+) (*application.GetTransactionResponse, error) {
 	ctx, span := prospan.Start(ctx)
 	defer span.End()
 
@@ -29,6 +33,27 @@ func (i *Implementation) GetTransaction(ctx context.Context, req application.Get
 	}
 	if _, ok := i.tenants[req.TenantID]; !ok {
 		return nil, span.Err(&proterror.NotFound{})
+	}
+
+	if i.completions != nil {
+		receipt, receiptErr := i.completions.Get(ctx, req.TenantID, req.TransactionID, caller.Key)
+		if receiptErr == nil {
+			if !i.now().Before(receipt.ExpiresAt) {
+				return nil, span.Err(errors.Join(&proterror.FailedPrecondition{}, entity.ErrTransactionExpired))
+			}
+			return &application.GetTransactionResponse{Transaction: application.TransactionProgress{
+				ID:              receipt.TransactionID,
+				TenantID:        receipt.TenantID,
+				Intent:          receipt.Intent,
+				Status:          entity.TransactionCompleted,
+				CreatedAt:       receipt.CreatedAt,
+				ExpiresAt:       receipt.ExpiresAt,
+				PolicySatisfied: true,
+			}}, nil
+		}
+		if !errors.Is(receiptErr, repository.ErrNotFound) {
+			return nil, span.Err(receiptErr)
+		}
 	}
 
 	tx, err := i.transactions.Get(ctx, req.TenantID, req.TransactionID, caller.Key)
@@ -53,7 +78,12 @@ func (i *Implementation) GetTransaction(ctx context.Context, req application.Get
 	progress := application.TransactionProgress{Status: tx.Status, ID: tx.ID, TenantID: tx.TenantID, Intent: tx.Intent,
 		CreatedAt: tx.CreatedAt, ExpiresAt: tx.ExpiresAt, PolicySatisfied: decision.Satisfied}
 	if tx.Pending != nil {
-		progress.PendingAttempt = &application.PendingMethod{AttemptID: tx.Pending.ID, Selection: tx.Pending.Selection, ChallengeID: tx.Pending.ChallengeID, Ready: tx.Pending.Ready}
+		progress.PendingAttempt = &application.PendingMethod{
+			AttemptID:   tx.Pending.ID,
+			Selection:   tx.Pending.Selection,
+			ChallengeID: tx.Pending.ChallengeID,
+			Ready:       tx.Pending.Ready,
+		}
 	} else if tx.Status == entity.TransactionActive && tx.Claim == nil && tx.Attempts < tx.Settings.MaxAttempts {
 		for _, selection := range decision.MethodSelections() {
 			driver := i.tenants[tx.TenantID].methods[selection.Method]

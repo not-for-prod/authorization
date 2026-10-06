@@ -34,6 +34,8 @@ type TenantConfig struct {
 // authorization boundaries. Hooks/adapters must be concurrency-safe and return
 // errors without credentials or raw provider input.
 type Config struct {
+	Completions        repository.Completion
+	CompletionManager  repository.TransactionManager
 	Events             repository.EventPublisher
 	Transactions       repository.Transaction
 	TransactionManager repository.TransactionManager
@@ -54,23 +56,29 @@ type tenantConfig struct {
 }
 
 type Implementation struct {
-	events       repository.EventPublisher
-	transactions repository.Transaction
-	txManager    repository.TransactionManager
-	users        repository.User
-	identities   repository.Identity
-	policies     repository.Policy
-	evaluator    service.Evaluator
-	access       application.Access
-	eligible     func(context.Context, entity.TenantID, entity.User) error
-	tenants      map[entity.TenantID]tenantConfig
-	limits       entity.TransactionSettings
-	now          func() time.Time
+	completions       repository.Completion
+	completionManager repository.TransactionManager
+	events            repository.EventPublisher
+	transactions      repository.Transaction
+	txManager         repository.TransactionManager
+	users             repository.User
+	identities        repository.Identity
+	policies          repository.Policy
+	evaluator         service.Evaluator
+	access            application.Access
+	eligible          func(context.Context, entity.TenantID, entity.User) error
+	tenants           map[entity.TenantID]tenantConfig
+	limits            entity.TransactionSettings
+	now               func() time.Time
 }
 
 func NewImplementation(cfg Config) (*Implementation, error) {
-	if cfg.Events == nil || cfg.Transactions == nil || cfg.TransactionManager == nil || cfg.Users == nil || cfg.Identities == nil ||
-		cfg.Policies == nil || cfg.Access == nil || cfg.Eligible == nil || len(cfg.Tenants) == 0 {
+	if cfg.Events == nil || cfg.Transactions == nil || cfg.TransactionManager == nil || cfg.Users == nil ||
+		cfg.Identities == nil ||
+		cfg.Policies == nil ||
+		cfg.Access == nil ||
+		cfg.Eligible == nil ||
+		len(cfg.Tenants) == 0 {
 		return nil, errors.Join(&proterror.InvalidArgument{}, errors.New("authentication dependencies are required"))
 	}
 
@@ -78,9 +86,28 @@ func NewImplementation(cfg Config) (*Implementation, error) {
 		return nil, errors.Join(&proterror.InvalidArgument{}, err)
 	}
 
-	i := &Implementation{events: cfg.Events, transactions: cfg.Transactions, txManager: cfg.TransactionManager, users: cfg.Users,
-		identities: cfg.Identities, policies: cfg.Policies, access: cfg.Access, eligible: cfg.Eligible,
-		tenants: make(map[entity.TenantID]tenantConfig), limits: cfg.Limits, now: cfg.Now}
+	if (cfg.Completions == nil) != (cfg.CompletionManager == nil) {
+		return nil, errors.Join(
+			&proterror.InvalidArgument{},
+			errors.New("completion storage and manager must be supplied together"),
+		)
+	}
+
+	i := &Implementation{
+		completions:       cfg.Completions,
+		completionManager: cfg.CompletionManager,
+		events:            cfg.Events,
+		transactions:      cfg.Transactions,
+		txManager:         cfg.TransactionManager,
+		users:             cfg.Users,
+		identities:        cfg.Identities,
+		policies:          cfg.Policies,
+		access:            cfg.Access,
+		eligible:          cfg.Eligible,
+		tenants:           make(map[entity.TenantID]tenantConfig),
+		limits:            cfg.Limits,
+		now:               cfg.Now,
+	}
 	if i.now == nil {
 		i.now = time.Now
 	}
@@ -90,7 +117,11 @@ func NewImplementation(cfg Config) (*Implementation, error) {
 			return nil, errors.Join(&proterror.InvalidArgument{}, errors.New("tenant needs methods and intents"))
 		}
 
-		tenant := tenantConfig{methods: make(map[entity.MethodID]gateway.Method), intents: make(map[entity.Intent]IntentConfig), sessions: source.Sessions}
+		tenant := tenantConfig{
+			methods:  make(map[entity.MethodID]gateway.Method),
+			intents:  make(map[entity.Intent]IntentConfig),
+			sessions: source.Sessions,
+		}
 		for _, method := range source.Methods {
 			if method == nil || method.Name() == "" {
 				return nil, errors.Join(&proterror.InvalidArgument{}, errors.New("method name is required"))
@@ -104,7 +135,7 @@ func NewImplementation(cfg Config) (*Implementation, error) {
 		}
 
 		for intent, rule := range source.Intents {
-			if !intent.Valid() || (rule.IssueSession && source.Sessions == nil) {
+			if !intent.Valid() || (rule.IssueSession && (source.Sessions == nil || intent == entity.IntentDelete)) {
 				return nil, errors.Join(
 					&proterror.InvalidArgument{},
 					errors.New("intent needs a name and configured session issuer"),

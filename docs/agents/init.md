@@ -58,8 +58,9 @@ See [Telegram OAuth driver](../telegram-oauth.md) for wiring and identity semant
 The approved [pending-attempt lifecycle](../event-storming/authentication-method-attempts.md)
 is implemented. Start is mandatory for every method and returns an attempt ID;
 Verify and Callback must match that attempt. The transaction owns pending-state
-guards, evidence acceptance and policy evaluation. Events record committed user
-actions; finalization stays synchronous. `Dependencies.Events` must share the
+guards, evidence acceptance and policy evaluation. Events record only successfully completed intent flows (sign-up, sign-in,
+identity changes, and account deletion), never intermediate proof or attempt steps;
+finalization stays synchronous. `Dependencies.Events` must share the
 root storage transaction. The in-memory event driver is atomic but non-durable;
 production hosts must provide a durable outbox adapter. See
 [domain event integration](../domain-events.md).

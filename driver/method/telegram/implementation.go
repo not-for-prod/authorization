@@ -28,7 +28,7 @@ const (
 
 // Config contains host-owned credentials, never policy or callback input.
 // Zero durations select a five-minute challenge and ten-second HTTP timeout.
-// RedirectURL must be an HTTPS URL registered with BotFather.
+// RedirectURL must be registered with BotFather. HTTP is allowed on localhost/127.0.0.1 for local development.
 type Config struct {
 	ClientID          string
 	ClientSecret      string
@@ -39,7 +39,10 @@ type Config struct {
 
 func (c *Config) Verify() error {
 	redirect, err := url.Parse(c.RedirectURL)
-	if err != nil || redirect.Scheme != "https" || redirect.Hostname() == "" ||
+	if err != nil ||
+		(redirect.Scheme != "https" && (redirect.Scheme != "http" ||
+			(redirect.Hostname() != "localhost" && redirect.Hostname() != "127.0.0.1"))) ||
+		redirect.Hostname() == "" ||
 		redirect.User != nil || redirect.Fragment != "" || redirect.Opaque != "" ||
 		strings.TrimSpace(c.ClientID) == "" || strings.ContainsAny(c.ClientID, ":\r\n") ||
 		strings.TrimSpace(c.ClientSecret) == "" || c.Timeout < 0 || c.ChallengeLifetime < 0 {

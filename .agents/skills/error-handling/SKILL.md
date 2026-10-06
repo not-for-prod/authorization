@@ -129,7 +129,9 @@ Choose the narrowest matching `proterror` kind:
 Prefer the most specific type over `Internal`.
 
 Preserve missing-user and missing-identity lookup errors as `NotFound` during
-authentication resolution. Do not replace a storage miss with invalid proof or
+authentication resolution. When verified proof has no registered account, preserve a
+distinct application sentinel alongside `NotFound` so hosts can offer registration
+without mistaking unrelated missing records for an unknown account. Do not replace a storage miss with invalid proof or
 `Unauthenticated`; invalid credentials and proofs are separate failures.
 
 ### Domain errors

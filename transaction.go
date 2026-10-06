@@ -39,3 +39,6 @@ const (
 
 // MethodAttempt is transaction-owned pending or completed method metadata.
 type MethodAttempt = entity.MethodAttempt
+
+// CompletionReceipt is the secret-free committed authentication result.
+type CompletionReceipt = entity.CompletionReceipt

@@ -35,6 +35,26 @@ func (i *Implementation) CompleteCallback(
 	if caller.Key == "" {
 		return nil, span.Err(&proterror.PermissionDenied{})
 	}
+	operation := completionOperation{
+		tenant:    req.TenantID,
+		id:        req.TransactionID,
+		owner:     caller.Key,
+		attempt:   req.AttemptID,
+		challenge: req.ChallengeID,
+		kind:      entity.OperationCallback,
+	}
+	if i.completions != nil {
+		recovered, handled, recoverErr := i.recoverCompletion(ctx, operation)
+		if recoverErr != nil {
+			return nil, span.Err(recoverErr)
+		}
+		if handled {
+			return &application.CompleteCallbackResponse{
+				Transaction: recovered.Transaction,
+				Result:      recovered.Result,
+			}, nil
+		}
+	}
 	transaction, err := i.transactions.Get(
 		ctx,
 		req.TenantID,
@@ -51,7 +71,8 @@ func (i *Implementation) CompleteCallback(
 	if err := transaction.CheckAttempt(req.AttemptID); err != nil {
 		return nil, span.Err(err)
 	}
-	if transaction.Intent != entity.IntentSignIn && transaction.Intent != entity.IntentSignUp {
+	if transaction.Intent != entity.IntentSignIn && transaction.Intent != entity.IntentSignUp &&
+		transaction.Intent != entity.IntentDelete {
 		return nil, span.Err(&proterror.Unimplemented{})
 	}
 
@@ -94,7 +115,13 @@ func (i *Implementation) CompleteCallback(
 
 	// Validate dispatch guards on a copy without persisting an operation lease.
 	check := transaction.Copy()
-	if err := check.ClaimOperation(req.AttemptID, entity.OperationCallback, challenge.Selection, req.ChallengeID, i.now()); err != nil {
+	if err := check.ClaimOperation(
+		req.AttemptID,
+		entity.OperationCallback,
+		challenge.Selection,
+		req.ChallengeID,
+		i.now(),
+	); err != nil {
 		return nil, span.Err(err)
 	}
 
@@ -127,7 +154,13 @@ func (i *Implementation) CompleteCallback(
 			return err
 		}
 		claimID := rand.Text()
-		if err := transaction.ClaimOperation(claimID, entity.OperationCallback, challenge.Selection, req.ChallengeID, i.now()); err != nil {
+		if err := transaction.ClaimOperation(
+			claimID,
+			entity.OperationCallback,
+			challenge.Selection,
+			req.ChallengeID,
+			i.now(),
+		); err != nil {
 			return err
 		}
 		if callbackErr != nil {
@@ -137,7 +170,10 @@ func (i *Implementation) CompleteCallback(
 			if err := i.transactions.Update(ctx, *transaction); err != nil {
 				return err
 			}
-			return i.events.Publish(ctx, transaction.Events())
+			if events := transaction.Events(); i.completions == nil || len(events) > 0 {
+				return i.events.Publish(ctx, events)
+			}
+			return nil
 		}
 
 		tenantConfig := i.tenants[req.TenantID]
@@ -163,7 +199,12 @@ func (i *Implementation) CompleteCallback(
 			return err
 		}
 
-		if decision.Satisfied {
+		if decision.Satisfied && i.completions != nil {
+			if err := transaction.FreezeCompletion(decision, i.now()); err != nil {
+				return errors.Join(&proterror.FailedPrecondition{}, err)
+			}
+		}
+		if decision.Satisfied && i.completions == nil {
 			response.Result = &application.AuthenticationResult{}
 			if err := i.finalizeIntent(ctx, finalizeIntentRequest{
 				Transaction: transaction,
@@ -178,8 +219,10 @@ func (i *Implementation) CompleteCallback(
 			return err
 		}
 
-		if err := i.events.Publish(ctx, transaction.Events()); err != nil {
-			return err
+		if events := transaction.Events(); i.completions == nil || len(events) > 0 {
+			if err := i.events.Publish(ctx, events); err != nil {
+				return err
+			}
 		}
 
 		response.Transaction = application.TransactionProgress{
@@ -221,5 +264,12 @@ func (i *Implementation) CompleteCallback(
 		return nil, span.Err(callbackErr)
 	}
 
+	if i.completions != nil && response.Transaction.PolicySatisfied {
+		recovered, _, recoverErr := i.recoverCompletion(ctx, operation)
+		if recoverErr != nil {
+			return nil, span.Err(recoverErr)
+		}
+		return &application.CompleteCallbackResponse{Transaction: recovered.Transaction, Result: recovered.Result}, nil
+	}
 	return &response, nil
 }

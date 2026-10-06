@@ -16,7 +16,11 @@ import (
 // Dependencies are host-owned ports. Callbacks and adapters must be safe for
 // concurrent use. Policies and method bindings are supplied through WithTenant.
 type Dependencies struct {
-	// Events records domain events atomically in the same TransactionManager as Transactions.
+	// Completions and CompletionManager opt into staged cross-store finalization.
+	// Both must be supplied; Users, Identities and Events share CompletionManager.
+	Completions       CompletionRepository
+	CompletionManager TransactionManager
+	// Events shares CompletionManager when configured, otherwise TransactionManager.
 	Events EventPublisher
 	// Transactions persists the entire authentication transaction, including its
 	// policy snapshot, challenges, evidence, and completion state. It must use
@@ -25,7 +29,8 @@ type Dependencies struct {
 	// TransactionManager provides atomic commit/rollback and holds root locks
 	// until completion. It must coordinate the same storage as Transactions;
 	// participating operations use the context supplied to its Do callback. SIGN_UP
-	// additionally requires Users, Identities and Events to share this atomic boundary.
+	// additionally requires Users, Identities and Events to share this atomic boundary
+	// unless Completions and CompletionManager select staged finalization.
 	TransactionManager TransactionManager
 	// Users loads existing canonical users after proof verification and before
 	// completion. For SIGN_UP it also creates the user in the shared storage transaction.
@@ -82,8 +87,20 @@ func WithClock(now func() time.Time) Option {
 func New(deps Dependencies, opts ...Option) (Authentication, error) {
 	for _, dependency := range []any{deps.Events, deps.Transactions, deps.TransactionManager, deps.Users, deps.Identities, deps.Access, deps.Eligible} {
 		if isNil(dependency) {
-			return nil, errors.Join(&proterror.InvalidArgument{}, errors.New("authentication dependencies are required"))
+			return nil, errors.Join(
+				&proterror.InvalidArgument{},
+				errors.New("authentication dependencies are required"),
+			)
 		}
+	}
+
+	if (deps.Completions != nil && isNil(deps.Completions)) ||
+		(deps.CompletionManager != nil && isNil(deps.CompletionManager)) ||
+		isNil(deps.Completions) != isNil(deps.CompletionManager) {
+		return nil, errors.Join(
+			&proterror.InvalidArgument{},
+			errors.New("completion storage and manager must be supplied together"),
+		)
 	}
 
 	cfg := configuration{tenants: make(map[TenantID]*tenantOptions)}
@@ -107,7 +124,10 @@ func New(deps Dependencies, opts ...Option) (Authentication, error) {
 	var policies []Policy
 
 	for id, source := range cfg.tenants {
-		tenant := authenticationservice.TenantConfig{Intents: make(map[Intent]authenticationservice.IntentConfig), Sessions: source.sessions}
+		tenant := authenticationservice.TenantConfig{
+			Intents:  make(map[Intent]authenticationservice.IntentConfig),
+			Sessions: source.sessions,
+		}
 		bindings := make(map[MethodID]*methodBinding)
 
 		for intent, definition := range source.intents {
@@ -123,7 +143,11 @@ func New(deps Dependencies, opts ...Option) (Authentication, error) {
 			}
 
 			policy := Policy{TenantID: id, Intent: intent, Root: root}
-			if _, err := (service.Evaluator{}).Evaluate(context.Background(), Transaction{TenantID: id, Intent: intent}, policy); err != nil {
+			if _, err := (service.Evaluator{}).Evaluate(
+				context.Background(),
+				Transaction{TenantID: id, Intent: intent},
+				policy,
+			); err != nil {
 				return nil, errors.Join(&proterror.InvalidArgument{}, err)
 			}
 
@@ -144,6 +168,7 @@ func New(deps Dependencies, opts ...Option) (Authentication, error) {
 	}
 
 	implementation, err := authenticationservice.NewImplementation(authenticationservice.Config{
+		Completions: deps.Completions, CompletionManager: deps.CompletionManager,
 		Events: deps.Events, Transactions: deps.Transactions, TransactionManager: deps.TransactionManager,
 		Users: deps.Users, Identities: deps.Identities, Access: deps.Access, Eligible: deps.Eligible,
 		Policies: policyRepository, Tenants: tenants, Limits: cfg.limits, Now: cfg.now,

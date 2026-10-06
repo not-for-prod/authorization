@@ -6,7 +6,7 @@ import (
 	"time"
 )
 
-// TransactionEvent describes a committed business transition, never proof input.
+// TransactionEvent describes a successfully completed intent flow, never an intermediate step or proof input.
 type TransactionEvent struct {
 	ID               string
 	Type             string
@@ -54,13 +54,26 @@ type AttemptSnapshot struct {
 }
 
 func (t Transaction) eventSnapshot() TransactionSnapshot {
-	snapshot := TransactionSnapshot{Attempts: t.Attempts, Status: t.Status, Version: t.Version, Intent: t.Intent, Evidence: slices.Clone(t.Evidence), CreatedAt: t.CreatedAt, ExpiresAt: t.ExpiresAt}
+	snapshot := TransactionSnapshot{
+		Attempts:  t.Attempts,
+		Status:    t.Status,
+		Version:   t.Version,
+		Intent:    t.Intent,
+		Evidence:  slices.Clone(t.Evidence),
+		CreatedAt: t.CreatedAt,
+		ExpiresAt: t.ExpiresAt,
+	}
 	if t.UserID != nil {
 		snapshot.UserID = *t.UserID
 	}
 
 	if t.Pending != nil {
-		snapshot.Pending = &AttemptSnapshot{ID: t.Pending.ID, Selection: t.Pending.Selection, ChallengeID: t.Pending.ChallengeID, Ready: t.Pending.Ready}
+		snapshot.Pending = &AttemptSnapshot{
+			ID:          t.Pending.ID,
+			Selection:   t.Pending.Selection,
+			ChallengeID: t.Pending.ChallengeID,
+			Ready:       t.Pending.Ready,
+		}
 	}
 
 	if t.Claim != nil {
@@ -69,7 +82,15 @@ func (t Transaction) eventSnapshot() TransactionSnapshot {
 	}
 
 	for _, challenge := range t.Challenges {
-		snapshot.Challenges = append(snapshot.Challenges, ChallengeSnapshot{ID: challenge.ID, Selection: challenge.Selection, Status: challenge.Status, ExpiresAt: challenge.ExpiresAt})
+		snapshot.Challenges = append(
+			snapshot.Challenges,
+			ChallengeSnapshot{
+				ID:        challenge.ID,
+				Selection: challenge.Selection,
+				Status:    challenge.Status,
+				ExpiresAt: challenge.ExpiresAt,
+			},
+		)
 	}
 
 	if t.Completion != nil {
@@ -91,7 +112,24 @@ func (t *Transaction) recordEvent(kind string, before *TransactionSnapshot, now 
 		cause = t.Completion.ID
 	}
 
-	t.events = append(t.events, TransactionEvent{ID: fmt.Sprintf("%s/%s/%d", t.TenantID, t.ID, t.Version), Type: kind, SchemaVersion: 1, AggregateType: "AuthenticationTransaction", AggregateID: t.ID, TenantID: t.TenantID, AggregateVersion: t.Version, OccurredAt: now.UTC(), CorrelationID: string(t.ID), CausationID: cause, Source: "authentication", Before: before, After: t.eventSnapshot()})
+	t.events = append(
+		t.events,
+		TransactionEvent{
+			ID:               fmt.Sprintf("%s/%s/%d", t.TenantID, t.ID, t.Version),
+			Type:             kind,
+			SchemaVersion:    1,
+			AggregateType:    "AuthenticationTransaction",
+			AggregateID:      t.ID,
+			TenantID:         t.TenantID,
+			AggregateVersion: t.Version,
+			OccurredAt:       now.UTC(),
+			CorrelationID:    string(t.ID),
+			CausationID:      cause,
+			Source:           "authentication",
+			Before:           before,
+			After:            t.eventSnapshot(),
+		},
+	)
 }
 func (e TransactionEvent) Copy() TransactionEvent {
 	if e.Before != nil {

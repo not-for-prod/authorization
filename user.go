@@ -11,6 +11,9 @@ type UserStatus = entity.UserStatus
 // UserStatusActive is assigned to newly registered users.
 const UserStatusActive = entity.UserStatusActive
 
+// UserStatusDeleted marks an account that can no longer authenticate.
+const UserStatusDeleted = entity.UserStatusDeleted
+
 // User exposes the entity contract for host implementations.
 type User = entity.User
 

@@ -129,15 +129,24 @@ func NewTransaction(id TransactionID, owner string, policy Policy, userID *UserI
 		return nil, err
 	}
 
-	tx := &Transaction{ID: id, TenantID: policy.TenantID, Intent: policy.Intent, OwnerKey: owner,
-		Policy: snapshot, Settings: settings, Status: TransactionActive, CreatedAt: now.UTC(), ExpiresAt: now.Add(settings.Lifetime).UTC()}
+	tx := &Transaction{
+		ID:        id,
+		TenantID:  policy.TenantID,
+		Intent:    policy.Intent,
+		OwnerKey:  owner,
+		Policy:    snapshot,
+		Settings:  settings,
+		Status:    TransactionActive,
+		CreatedAt: now.UTC(),
+		ExpiresAt: now.Add(settings.Lifetime).UTC(),
+	}
 
 	if userID != nil {
 		value := *userID
 		tx.UserID = &value
 	}
 
-	tx.recordEvent("TransactionCreated", nil, now)
+	tx.Version = 1
 
 	return tx, nil
 }
@@ -209,8 +218,6 @@ func (t *Transaction) AbandonExpiredClaim(now time.Time) bool {
 		return false
 	}
 
-	before := t.eventSnapshot()
-
 	t.Status = TransactionAbandoned
 
 	t.Pending = nil
@@ -221,7 +228,7 @@ func (t *Transaction) AbandonExpiredClaim(now time.Time) bool {
 		t.Challenges[i].Status = ChallengeRetired
 	}
 
-	t.recordEvent("TransactionAbandoned", &before, now)
+	t.Version++
 
 	return true
 }
@@ -295,21 +302,15 @@ func (t *Transaction) ClaimOperation(id string, kind OperationKind, selection Me
 		return ErrInvalidTransition
 	}
 
-	if kind != OperationStart && (t.Pending == nil || !t.Pending.Ready || t.Pending.Selection != selection || t.Pending.ChallengeID != challengeID) {
+	if kind != OperationStart &&
+		(t.Pending == nil || !t.Pending.Ready || t.Pending.Selection != selection || t.Pending.ChallengeID != challengeID) {
 		return ErrInvalidTransition
-	}
-
-	eventType := "MethodVerificationRequested"
-	if kind == OperationStart {
-		eventType = "MethodStartRequested"
 	}
 
 	expires := now.Add(t.Settings.OperationTimeout)
 	if expires.After(t.ExpiresAt) {
 		expires = t.ExpiresAt
 	}
-
-	before := t.eventSnapshot()
 
 	t.Claim = &OperationClaim{ID: id, Kind: kind, Selection: selection, ChallengeID: challengeID, ExpiresAt: expires}
 	if kind == OperationStart {
@@ -319,7 +320,7 @@ func (t *Transaction) ClaimOperation(id string, kind OperationKind, selection Me
 	t.Claim.AttemptID = t.Pending.ID
 	t.Attempts++
 
-	t.recordEvent(eventType, &before, now)
+	t.Version++
 
 	return nil
 }
@@ -353,8 +354,6 @@ func (t *Transaction) RecordMethodStarted(id string, challenge *Challenge, redir
 		return ErrInvalidTransition
 	}
 
-	before := t.eventSnapshot()
-
 	if challenge != nil {
 		if challenge.ID == "" || challenge.TransactionID != t.ID || challenge.Selection != t.Claim.Selection ||
 			challenge.Status != ChallengePending || challenge.CreatedAt.Before(t.CreatedAt) || challenge.CreatedAt.After(now) ||
@@ -383,7 +382,7 @@ func (t *Transaction) RecordMethodStarted(id string, challenge *Challenge, redir
 
 	t.Claim = nil
 
-	t.recordEvent("MethodStarted", &before, now)
+	t.Version++
 
 	return nil
 }
@@ -394,8 +393,6 @@ func (t *Transaction) RejectOperation(id string, retire bool, now time.Time) err
 	if err := t.CheckClaim(id, now); err != nil {
 		return err
 	}
-
-	before := t.eventSnapshot()
 
 	if retire && t.Claim.ChallengeID != "" {
 		for i := range t.Challenges {
@@ -412,7 +409,7 @@ func (t *Transaction) RejectOperation(id string, retire bool, now time.Time) err
 
 	t.Claim = nil
 
-	t.recordEvent("MethodProofRejected", &before, now)
+	t.Version++
 
 	return nil
 }
@@ -422,7 +419,9 @@ func (t *Transaction) AcceptEvidence(id string, userID UserID, evidence Evidence
 		return err
 	}
 
-	if t.Claim.Kind == OperationStart || (userID == "" && t.VerifiedIdentity == nil) || evidence.VerifiedAt.Before(t.CreatedAt) || evidence.VerifiedAt.After(now) ||
+	if t.Claim.Kind == OperationStart || (userID == "" && t.VerifiedIdentity == nil) ||
+		evidence.VerifiedAt.Before(t.CreatedAt) ||
+		evidence.VerifiedAt.After(now) ||
 		(MethodSelection{Requirement: evidence.Requirement, Method: evidence.Method, Provider: evidence.Provider}) != t.Claim.Selection {
 		return ErrInvalidProof
 	}
@@ -443,12 +442,11 @@ func (t *Transaction) AcceptEvidence(id string, userID UserID, evidence Evidence
 	}
 
 	for _, accepted := range t.Evidence {
-		if accepted.Requirement == evidence.Requirement && accepted.Method == evidence.Method && accepted.Provider == evidence.Provider {
+		if accepted.Requirement == evidence.Requirement && accepted.Method == evidence.Method &&
+			accepted.Provider == evidence.Provider {
 			return ErrInvalidProof
 		}
 	}
-
-	before := t.eventSnapshot()
 
 	if userID != "" {
 		t.UserID = &userID
@@ -473,7 +471,7 @@ func (t *Transaction) AcceptEvidence(id string, userID UserID, evidence Evidence
 	t.Completion = &completion
 	t.Claim = nil
 
-	t.recordEvent("EvidenceAccepted", &before, now)
+	t.Version++
 
 	return nil
 }
@@ -483,13 +481,19 @@ func (t *Transaction) PrepareCompletion(decision Decision, now time.Time) error 
 		return err
 	}
 
-	if t.Status != TransactionActive || t.Claim != nil || !decision.Satisfied || t.UserID == nil || t.Completion == nil {
+	if (t.Status != TransactionActive && t.Status != TransactionFinalizing) || t.Principal != nil || t.Claim != nil ||
+		!decision.Satisfied ||
+		t.UserID == nil ||
+		t.Completion == nil {
 		return ErrInvalidTransition
 	}
 
-	before := t.eventSnapshot()
-
-	t.Principal = &Principal{TenantID: t.TenantID, UserID: *t.UserID, Evidence: slices.Clone(t.Evidence), AuthenticatedAt: now.UTC()}
+	t.Principal = &Principal{
+		TenantID:        t.TenantID,
+		UserID:          *t.UserID,
+		Evidence:        slices.Clone(t.Evidence),
+		AuthenticatedAt: now.UTC(),
+	}
 
 	t.Status = TransactionFinalizing
 	for i := range t.Challenges {
@@ -499,7 +503,7 @@ func (t *Transaction) PrepareCompletion(decision Decision, now time.Time) error 
 		}
 	}
 
-	t.recordEvent("PolicySatisfied", &before, now)
+	t.Version++
 
 	return nil
 }

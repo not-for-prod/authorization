@@ -265,6 +265,16 @@ func TestEngineGoogleSignUpSignInAndReplay(t *testing.T) {
 			if err != nil {
 				t.Fatal(err)
 			}
+			if len(emitted) != 2 {
+				t.Fatalf("expected one event per completed intent: %+v", emitted)
+			}
+			for index, intent := range []entity.Intent{entity.IntentSignUp, entity.IntentSignIn} {
+				event := emitted[index]
+				if event.Type != "AuthenticationCompleted" || event.After.Intent != intent ||
+					event.After.Status != entity.TransactionCompleted || event.After.UserID != registered {
+					t.Fatalf("incorrect completion event: %+v", event)
+				}
+			}
 			encoded, err := json.Marshal(emitted)
 			if err != nil {
 				t.Fatal(err)
@@ -342,13 +352,8 @@ func TestEngineRejectionAndAmbiguousRecovery(t *testing.T) {
 			if err != nil {
 				t.Fatal(err)
 			}
-			foundRejection, foundAbandonment := false, false
-			for _, event := range emitted {
-				foundRejection = foundRejection || event.Type == "MethodProofRejected"
-				foundAbandonment = foundAbandonment || event.Type == "TransactionAbandoned"
-			}
-			if !foundRejection || !foundAbandonment {
-				t.Fatal("missing recovery events")
+			if len(emitted) != 0 {
+				t.Fatal("failed or abandoned flow emitted events")
 			}
 		})
 	}
@@ -412,45 +417,37 @@ func (p failingPublisher) Publish(ctx context.Context, events []entity.Transacti
 	return p.EventPublisher.Publish(ctx, events)
 }
 
-func TestClaimAndAcceptancePublicationAreAtomic(t *testing.T) {
-	for _, failOn := range []string{"MethodVerificationRequested", "EvidenceAccepted"} {
-		t.Run(failOn, func(t *testing.T) {
-			var calls atomic.Int32
-			f := newEngine(t, transportFunc(func(r *http.Request) (*http.Response, error) {
-				calls.Add(1)
-				if r.URL.Host == "oauth2.googleapis.com" {
-					return httpResponse(200, `{"access_token":"token","token_type":"Bearer"}`), nil
-				}
-				return httpResponse(200, `{"id":"subject"}`), nil
-			}), func(p repository.EventPublisher) repository.EventPublisher { return failingPublisher{p, failOn} })
-			request := f.start(t, auth.IntentSignUp)
-			if _, err := verifyThrough(t.Context(), f, "callback", request); err == nil {
-				t.Fatal("accepted failed publication")
-			}
-			saved, err := f.transactions.Get(t.Context(), "demo", request.TransactionID, "owner")
-			if err != nil {
-				t.Fatal(err)
-			}
-			if len(saved.Evidence) != 0 || saved.Pending == nil ||
-				saved.Challenges[0].Status != entity.ChallengePending {
-				t.Fatal("partial evidence commit")
-			}
-			if failOn == "MethodVerificationRequested" {
-				if saved.Claim != nil || calls.Load() != 0 {
-					t.Fatal("dispatch before claim committed")
-				}
-			} else {
-				if saved.Claim == nil || calls.Load() != 2 {
-					t.Fatal("lost committed dispatch claim")
-				}
-				if _, err := verifyThrough(t.Context(), f, "callback", request); !errors.Is(err, entity.ErrTransactionBusy) {
-					t.Fatalf("retry = %v", err)
-				}
-				if calls.Load() != 2 {
-					t.Fatal("re-exchanged after persistence failure")
-				}
-			}
-		})
+func TestCompletionPublicationIsAtomic(t *testing.T) {
+	var calls atomic.Int32
+	f := newEngine(t, transportFunc(func(r *http.Request) (*http.Response, error) {
+		calls.Add(1)
+		if r.URL.Host == "oauth2.googleapis.com" {
+			return httpResponse(200, `{"access_token":"token","token_type":"Bearer"}`), nil
+		}
+		return httpResponse(200, `{"id":"subject"}`), nil
+	}), func(p repository.EventPublisher) repository.EventPublisher {
+		return failingPublisher{p, "AuthenticationCompleted"}
+	})
+	request := f.start(t, auth.IntentSignUp)
+	if _, err := verifyThrough(t.Context(), f, "verify", request); err == nil {
+		t.Fatal("accepted failed publication")
+	}
+	saved, err := f.transactions.Get(t.Context(), "demo", request.TransactionID, "owner")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(saved.Evidence) != 0 || saved.Pending == nil ||
+		saved.Challenges[0].Status != entity.ChallengePending {
+		t.Fatal("partial completion commit")
+	}
+	if saved.Claim == nil || calls.Load() != 2 {
+		t.Fatal("lost committed dispatch claim")
+	}
+	if _, err := verifyThrough(t.Context(), f, "verify", request); !errors.Is(err, entity.ErrTransactionBusy) {
+		t.Fatalf("retry = %v", err)
+	}
+	if calls.Load() != 2 {
+		t.Fatal("re-exchanged after persistence failure")
 	}
 }
 

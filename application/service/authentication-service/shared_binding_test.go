@@ -66,7 +66,7 @@ func TestSharedBindingDefersIntentRulesToFinalization(t *testing.T) {
 				err = svc.finalizeIntent(t.Context(), finalizeIntentRequest{Transaction: tx, Decision: decision, Result: &result})
 				switch {
 				case intent == entity.IntentSignIn && !registered:
-					if !errors.Is(err, repository.ErrNotFound) {
+					if !errors.Is(err, repository.ErrNotFound) || !errors.Is(err, application.ErrAccountNotFound) {
 						t.Fatal("sign-in must require an existing user", err)
 					}
 				case intent == entity.IntentSignUp && registered:
