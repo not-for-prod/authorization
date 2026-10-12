@@ -38,7 +38,8 @@ type Dependencies struct {
 	// Identities resolves a driver's verified issuer/subject pair to an existing
 	// user. Drivers returning a verified UserID bypass this lookup. The engine
 	// creates the initial identity during SIGN_UP. It never merges accounts.
-	Identities IdentityRepository
+	Identities    IdentityRepository
+	ProfileEmails ProfileEmailRepository
 	// Access authorizes the requested tenant and derives Caller from trusted host
 	// context on every operation. Caller.Key must remain stable across the flow;
 	// Caller.UserID is optional until a user has been authenticated by the host.
@@ -170,7 +171,7 @@ func New(deps Dependencies, opts ...Option) (Authentication, error) {
 	implementation, err := authenticationservice.NewImplementation(authenticationservice.Config{
 		Completions: deps.Completions, CompletionManager: deps.CompletionManager,
 		Events: deps.Events, Transactions: deps.Transactions, TransactionManager: deps.TransactionManager,
-		Users: deps.Users, Identities: deps.Identities, Access: deps.Access, Eligible: deps.Eligible,
+		Users: deps.Users, Identities: deps.Identities, ProfileEmails: deps.ProfileEmails, Access: deps.Access, Eligible: deps.Eligible,
 		Policies: policyRepository, Tenants: tenants, Limits: cfg.limits, Now: cfg.now,
 	})
 	if err != nil {

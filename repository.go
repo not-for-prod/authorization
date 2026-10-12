@@ -14,6 +14,9 @@ type UserRepository = repository.User
 // IdentityRepository exposes the repository contract for host implementations.
 type IdentityRepository = repository.Identity
 
+// ProfileEmailRepository supplies identity-owned verified profile email storage.
+type ProfileEmailRepository = repository.ProfileEmail
+
 // PolicyRepository exposes the repository contract for host implementations.
 type PolicyRepository = repository.Policy
 

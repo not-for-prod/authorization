@@ -50,9 +50,10 @@ type Identity struct {
 	ID     IdentityID
 	UserID UserID
 
-	Kind    IdentityKind
-	Issuer  string
-	Subject string
+	Kind          IdentityKind
+	Issuer        string
+	Subject       string
+	VerifiedEmail string
 
 	// PasswordHash is an optional encoded password hash provisioned by the host.
 	// Empty means password authentication is not enrolled. Never log or expose it

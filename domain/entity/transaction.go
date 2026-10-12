@@ -82,9 +82,10 @@ type MethodAttempt struct {
 // VerifiedIdentity identifies a proven subject, whether registered or unresolved. It is private
 // transaction state, not a credential and not a published event payload.
 type VerifiedIdentity struct {
-	Kind    IdentityKind
-	Issuer  string
-	Subject string
+	Kind          IdentityKind
+	Issuer        string
+	Subject       string
+	VerifiedEmail string
 }
 
 // Transaction owns progress, bounded challenges, and completion intent.

@@ -48,6 +48,9 @@ func (i *Implementation) StartMethod(
 				return err
 			}
 
+			if err := checkUpdateCaller(*transaction, caller); err != nil {
+				return err
+			}
 			tenantConfig, ok := i.tenants[req.TenantID]
 			if !ok {
 				return &proterror.InvalidArgument{}

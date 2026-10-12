@@ -62,6 +62,8 @@ Use `error-handling` as the authority for constructing and classifying errors. D
 
 Use `tracing` for span lifecycle. Record only request fields that are safe for telemetry; do not attach credentials, tokens, private keys, raw payloads, or unreviewed PII through `prospan.WithRequest`.
 
+Preserve explicitly supported application error reasons through transport mapping so clients can distinguish actionable business failures from generic errors with the same status. Expose only stable public reasons, never raw internal error text.
+
 Let the existing proterror middleware map classified service errors to protocol responses. Do not duplicate protocol mapping inside every handler unless generated contracts require it.
 
 ## Scheduled Worker Workflow

@@ -29,7 +29,7 @@ func (r *Repository) Get(
 	if len(opts) > 0 {
 		query += " FOR UPDATE"
 	}
-	if err = access.DB.QueryRow(ctx, query, string(id)).Scan(&row.ID, &row.UserID, &row.Kind, &row.Issuer, &row.Subject, &row.PasswordHash, &row.CreatedAt); err != nil {
+	if err = access.DB.QueryRow(ctx, query, string(id)).Scan(&row.ID, &row.UserID, &row.Kind, &row.Issuer, &row.Subject, &row.PasswordHash, &row.CreatedAt, &row.VerifiedEmail); err != nil {
 		return nil, span.Err(postgres.FromPG(err))
 	}
 	value := convert.IdentityFromXO(row)

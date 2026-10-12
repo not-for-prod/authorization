@@ -63,6 +63,9 @@ func transportError(err error) error {
 	if err == nil {
 		return nil
 	}
+	if errors.Is(err, application.ErrAccountNotFound) {
+		return status.Error(codes.NotFound, "account_not_found")
+	}
 
 	code := codes.Internal
 

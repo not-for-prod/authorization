@@ -19,6 +19,7 @@ type completionOperation struct {
 	attempt   string
 	challenge entity.ChallengeID
 	kind      entity.OperationKind
+	user      *entity.UserID
 }
 
 // recoverCompletion is shared by VerifyMethod and CompleteCallback. It resolves
@@ -35,6 +36,9 @@ func (i *Implementation) recoverCompletion(
 		transaction, loadErr := i.transactions.Get(ctx, op.tenant, op.id, op.owner)
 		if loadErr != nil {
 			return nil, true, loadErr
+		}
+		if err := checkUpdateCaller(*transaction, application.Caller{Key: op.owner, UserID: op.user}); err != nil {
+			return nil, true, err
 		}
 		if transaction.Status != entity.TransactionFinalizing && transaction.Status != entity.TransactionCompleted {
 			return nil, false, nil
@@ -93,6 +97,9 @@ func (i *Implementation) recoverCompletion(
 		if err != nil {
 			return nil, true, err
 		}
+	}
+	if receipt.Intent == entity.IntentUpdate && (op.user == nil || *op.user != receipt.Principal.UserID) {
+		return nil, true, &proterror.Unauthenticated{}
 	}
 	if err = receipt.CheckOperation(op.attempt, op.challenge, op.kind, i.now()); err != nil {
 		return nil, true, errors.Join(&proterror.FailedPrecondition{}, err)

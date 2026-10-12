@@ -43,6 +43,7 @@ func (i *Implementation) VerifyMethod(
 		attempt:   req.AttemptID,
 		challenge: req.GetChallengeID(),
 		kind:      entity.OperationVerify,
+		user:      caller.UserID,
 	}
 	if i.completions != nil {
 		recovered, handled, recoverErr := i.recoverCompletion(ctx, operation)
@@ -74,6 +75,9 @@ func (i *Implementation) VerifyMethod(
 				return err
 			}
 
+			if err := checkUpdateCaller(*transaction, caller); err != nil {
+				return err
+			}
 			if err := transaction.CheckUsable(i.now()); err != nil {
 				return err
 			}
@@ -91,7 +95,7 @@ func (i *Implementation) VerifyMethod(
 				return nil
 			}
 			if transaction.Intent != entity.IntentSignIn &&
-				transaction.Intent != entity.IntentSignUp && transaction.Intent != entity.IntentDelete {
+				transaction.Intent != entity.IntentSignUp && transaction.Intent != entity.IntentDelete && transaction.Intent != entity.IntentUpdate {
 				return &proterror.Unimplemented{}
 			}
 
@@ -209,7 +213,7 @@ func (i *Implementation) VerifyMethod(
 			return err
 		}
 
-		userID, identity, err := i.resolveVerifiedSubject(ctx, verificationResult)
+		userID, identity, err := i.resolveLinkProof(ctx, *transaction, caller, verificationResult)
 		if err != nil {
 			return err
 		}
@@ -337,18 +341,27 @@ func (i *Implementation) finalizeIntent(ctx context.Context, req finalizeIntentR
 		if err := i.identities.Create(
 			ctx,
 			entity.Identity{
-				ID:        entity.IdentityID(rand.Text()),
-				UserID:    user.ID,
-				Kind:      identity.Kind,
-				Issuer:    identity.Issuer,
-				Subject:   identity.Subject,
-				CreatedAt: user.CreatedAt,
+				ID:            entity.IdentityID(rand.Text()),
+				UserID:        user.ID,
+				Kind:          identity.Kind,
+				Issuer:        identity.Issuer,
+				Subject:       identity.Subject,
+				VerifiedEmail: identity.VerifiedEmail,
+				CreatedAt:     user.CreatedAt,
 			},
 		); err != nil {
 			return err
 		}
 
 		if err := req.Transaction.BindRegisteredUser(user.ID, req.Decision, i.now()); err != nil {
+			return err
+		}
+
+	case entity.IntentUpdate:
+		if err := i.attachEmail(ctx, req.Transaction); err != nil {
+			return err
+		}
+		if err := req.Transaction.PrepareCompletion(req.Decision, i.now()); err != nil {
 			return err
 		}
 
@@ -388,6 +401,9 @@ func (i *Implementation) finalizeIntent(ctx context.Context, req finalizeIntentR
 			return entity.ErrInvalidProof
 		}
 		if err := i.eligible(ctx, req.Transaction.TenantID, *user); err != nil {
+			return err
+		}
+		if err := i.retainOAuthEmail(ctx, req.Transaction, *user); err != nil {
 			return err
 		}
 		if err := req.Transaction.PrepareCompletion(req.Decision, i.now()); err != nil {

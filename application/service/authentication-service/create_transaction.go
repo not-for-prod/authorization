@@ -39,7 +39,7 @@ func (i *Implementation) CreateTransaction(
 	if req.AuthenticatedUserID != nil && (caller.UserID == nil || *caller.UserID != *req.AuthenticatedUserID) {
 		return nil, span.Err(&proterror.PermissionDenied{})
 	}
-	if (rule.RequireAuthenticatedUser || req.Intent == entity.IntentDelete) && caller.UserID == nil {
+	if (rule.RequireAuthenticatedUser || req.Intent == entity.IntentDelete || req.Intent == entity.IntentUpdate) && caller.UserID == nil {
 		return nil, span.Err(&proterror.Unauthenticated{})
 	}
 	if req.Intent == entity.IntentSignUp && caller.UserID != nil {

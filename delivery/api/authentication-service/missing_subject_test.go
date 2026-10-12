@@ -40,7 +40,11 @@ func TestMissingSubjectReturnsNotFound(t *testing.T) {
 				body = `{"challengeId":"` + started["challenge"].(map[string]any)["id"].(string) + `",` + body[1:]
 			}
 			response := request(t, h, "browser", http.MethodPost, base+"/"+id+":verifyMethod", body, http.StatusNotFound)
-			if response["message"] != "NotFound" {
+			expected := "NotFound"
+			if scenario == "identity" {
+				expected = "account_not_found"
+			}
+			if response["message"] != expected {
 				t.Fatalf("unexpected error: %+v", response)
 			}
 			saved, err := f.Store.Get(context.Background(), "demo", entity.TransactionID(id), "browser")

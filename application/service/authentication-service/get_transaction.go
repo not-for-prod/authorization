@@ -63,6 +63,9 @@ func (i *Implementation) GetTransaction(
 	if tx == nil || tx.ID != req.TransactionID || tx.TenantID != req.TenantID {
 		return nil, span.Err(&proterror.NotFound{})
 	}
+	if err := checkUpdateCaller(*tx, caller); err != nil {
+		return nil, span.Err(err)
+	}
 	if err := tx.CheckUsable(i.now()); err != nil {
 		return nil, span.Err(errors.Join(&proterror.FailedPrecondition{}, err))
 	}

@@ -150,9 +150,10 @@ func (m *Method) Callback(
 			VerifiedAt:  m.now().UTC(),
 		},
 		Identity: &gateway.VerifiedIdentity{
-			Kind:    "oauth",
-			Issuer:  GoogleIssuer,
-			Subject: user.UserID,
+			Kind:          "oauth",
+			Issuer:        GoogleIssuer,
+			Subject:       user.UserID,
+			VerifiedEmail: verifiedGoogleEmail(user.Email, user.RawData),
 		},
 	}, nil
 }

@@ -1,11 +1,12 @@
 package authenticationservice
 
 import (
+	"context"
+	"errors"
+
 	"github.com/not-for-prod/authorization/domain/entity"
 	"github.com/not-for-prod/authorization/domain/gateway"
 	"github.com/not-for-prod/authorization/domain/repository"
-	"context"
-	"errors"
 )
 
 // resolveVerifiedSubject resolves ownership without applying an intent's completion rules.
@@ -20,7 +21,7 @@ func (i *Implementation) resolveVerifiedSubject(ctx context.Context, proof gatew
 		if value.Kind == "" || value.Issuer == "" || value.Subject == "" {
 			return "", nil, entity.ErrInvalidProof
 		}
-		identity = &entity.VerifiedIdentity{Kind: value.Kind, Issuer: value.Issuer, Subject: value.Subject}
+		identity = &entity.VerifiedIdentity{Kind: value.Kind, Issuer: value.Issuer, Subject: value.Subject, VerifiedEmail: entity.NormalizeVerifiedEmail(value.VerifiedEmail)}
 		stored, err := i.identities.GetBySubject(ctx, value.Issuer, value.Subject)
 		if errors.Is(err, repository.ErrNotFound) {
 			return "", identity, nil

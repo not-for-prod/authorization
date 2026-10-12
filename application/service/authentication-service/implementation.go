@@ -41,6 +41,7 @@ type Config struct {
 	TransactionManager repository.TransactionManager
 	Users              repository.User
 	Identities         repository.Identity
+	ProfileEmails      repository.ProfileEmail
 	Policies           repository.Policy
 	Access             application.Access
 	Eligible           func(context.Context, entity.TenantID, entity.User) error
@@ -63,6 +64,7 @@ type Implementation struct {
 	txManager         repository.TransactionManager
 	users             repository.User
 	identities        repository.Identity
+	profileEmails     repository.ProfileEmail
 	policies          repository.Policy
 	evaluator         service.Evaluator
 	access            application.Access
@@ -101,6 +103,7 @@ func NewImplementation(cfg Config) (*Implementation, error) {
 		txManager:         cfg.TransactionManager,
 		users:             cfg.Users,
 		identities:        cfg.Identities,
+		profileEmails:     cfg.ProfileEmails,
 		policies:          cfg.Policies,
 		access:            cfg.Access,
 		eligible:          cfg.Eligible,

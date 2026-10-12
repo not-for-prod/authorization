@@ -73,9 +73,10 @@ type VerificationResult struct {
 // permission to create/link an account. Issuer and Subject must be nonempty.
 // Equal reported emails from different issuers do not imply the same user.
 type VerifiedIdentity struct {
-	Kind    entity.IdentityKind
-	Issuer  string
-	Subject string
+	Kind          entity.IdentityKind
+	Issuer        string
+	Subject       string
+	VerifiedEmail string
 }
 
 // ErrProofRejected is a definitive rejection with no uncertain external outcome.

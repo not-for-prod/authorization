@@ -5,29 +5,31 @@ import "time"
 
 // AuthIdentity is a generated database row.
 type AuthIdentity struct {
-	ID           string
-	UserID       string
-	Kind         string
-	Issuer       string
-	Subject      string
-	PasswordHash string
-	CreatedAt    time.Time
+	ID            string
+	UserID        string
+	Kind          string
+	Issuer        string
+	Subject       string
+	PasswordHash  string
+	CreatedAt     time.Time
+	VerifiedEmail string
 }
 
 const Table_AuthIdentity = "auth_identity"
 const (
-	AuthIdentity_ID           = "id"
-	AuthIdentity_UserID       = "user_id"
-	AuthIdentity_Kind         = "kind"
-	AuthIdentity_Issuer       = "issuer"
-	AuthIdentity_Subject      = "subject"
-	AuthIdentity_PasswordHash = "password_hash"
-	AuthIdentity_CreatedAt    = "created_at"
+	AuthIdentity_ID            = "id"
+	AuthIdentity_UserID        = "user_id"
+	AuthIdentity_Kind          = "kind"
+	AuthIdentity_Issuer        = "issuer"
+	AuthIdentity_Subject       = "subject"
+	AuthIdentity_PasswordHash  = "password_hash"
+	AuthIdentity_CreatedAt     = "created_at"
+	AuthIdentity_VerifiedEmail = "verified_email"
 )
 
 func (r AuthIdentity) Columns() string {
-	return "id, user_id, kind, issuer, subject, password_hash, created_at"
+	return "id, user_id, kind, issuer, subject, password_hash, created_at, verified_email"
 }
 func (r AuthIdentity) Values() []any {
-	return []any{r.ID, r.UserID, r.Kind, r.Issuer, r.Subject, r.PasswordHash, r.CreatedAt}
+	return []any{r.ID, r.UserID, r.Kind, r.Issuer, r.Subject, r.PasswordHash, r.CreatedAt, r.VerifiedEmail}
 }

@@ -103,6 +103,12 @@ Queries:
 
 Do not hide a state change inside a method that reads like a query.
 
+When embedding a reusable library, keep host-specific profile and presentation
+queries in the host application's service layer. Read the needed data through a
+host-owned repository or a generic library data contract; do not expand the
+library's public use-case API solely to serve a host screen. Keep library-owned
+write invariants and proof verification inside the library.
+
 Domain events do not imply asynchronous orchestration. When the approved command
 contract returns a completed result, keep finalization synchronous and publish
 events as records of committed transitions. Introduce a consumer or a deferred

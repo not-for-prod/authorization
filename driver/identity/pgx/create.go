@@ -22,7 +22,7 @@ func (r *Repository) Create(ctx context.Context, value entity.Identity) error {
 	row := convert.IdentityToXO(value)
 	_, err = access.DB.Exec(
 		ctx,
-		"INSERT INTO "+xo.Table_AuthIdentity+" ("+row.Columns()+") VALUES ($1,$2,$3,$4,$5,$6,$7)",
+		"INSERT INTO "+xo.Table_AuthIdentity+" ("+row.Columns()+") VALUES ($1,$2,$3,$4,$5,$6,$7,$8)",
 		row.Values()...)
 	if err != nil {
 		return span.Err(postgres.FromPG(err))

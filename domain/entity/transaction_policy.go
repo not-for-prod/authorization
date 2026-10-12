@@ -92,7 +92,7 @@ func (t *Transaction) AcceptMethodProof(ctx context.Context, evaluator PolicyEva
 	}
 	// Unresolved proofs can only accumulate for the same identity. Once resolved,
 	// different linked identities are accepted only when they prove the same user.
-	if t.UserID == nil && t.VerifiedIdentity != nil && (identity == nil || *t.VerifiedIdentity != *identity) {
+	if t.UserID == nil && t.VerifiedIdentity != nil && (identity == nil || (t.VerifiedIdentity.Kind != identity.Kind || t.VerifiedIdentity.Issuer != identity.Issuer || t.VerifiedIdentity.Subject != identity.Subject)) {
 		return Decision{}, ErrSubjectMismatch
 	}
 	next := t.Copy()
